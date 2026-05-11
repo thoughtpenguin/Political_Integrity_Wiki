@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# The Political Integrity Wiki
+
+An open-source, semi-decentralized platform for tracking U.S. campaign finance and political accountability. Using truth algorithms inspired by Reddit and prediction markets, the community crowdsources and verifies data that isn't always captured in automated feeds.
+
+## Tech Stack
+
+- **Frontend**: [Next.js 16](https://nextjs.org/) (App Router, TypeScript, Tailwind CSS)
+- **Backend**: [Firebase Cloud Functions](https://firebase.google.com/docs/functions) (Python 3.13+)
+- **Database**: [Cloud Firestore](https://firebase.google.com/docs/firestore)
+- **Hosting**: [Firebase App Hosting](https://firebase.google.com/docs/app-hosting)
+- **Data Source**: [OpenFEC API](https://api.open.fec.gov/developers/)
+
+## Project Structure
+
+- `app/`: Next.js frontend application.
+- `functions/`: Python Cloud Functions for data ingestion and credibility calculations.
+- `lib/`: Shared TypeScript utilities, type definitions, and Firestore data fetching layers.
+- `public/`: Static assets.
+- `firestore.rules`: Security rules for database access.
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Node.js**: v20 or higher
+- **Python**: v3.11 or higher
+- **Firebase CLI**: `npm install -g firebase-tools`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation & Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Clone and Install Dependencies**:
+   ```bash
+   git clone <repository-url>
+   cd political_integrity_wiki
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **Configure Python Functions**:
+   ```bash
+   cd functions
+   python3 -m venv venv
+   source venv/bin/activate  # Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
 
-## Learn More
+3. **Environment Variables**:
+   In the `functions/` directory, copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+   Add your [FEC API Key](https://api.open.fec.gov/developers) to the `.env` file.
 
-To learn more about Next.js, take a look at the following resources:
+4. **Run Local Emulators**:
+   From the **root** directory:
+   ```bash
+   npm run emulate
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Accessing the Project
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Once the emulators are running:
+- **Web App**: [http://localhost:5002](http://localhost:5002)
+- **Firebase Emulator UI**: [http://localhost:4000](http://localhost:4000) (Use this to inspect the database and logs)
 
-## Deploy on Vercel
+## ⚖️ How It Works
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### The Credibility System
+Users earn **Credibility Points** by submitting verified information and having their proposals upvoted by the community. High-credibility users can:
+- Propose data for state and local candidates.
+- Verify "Badges" (e.g., "Corporate PAC Money Pledge") with video/text citations.
+- Have their votes carry more weight in the "Truth Algorithm."
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Data Ingestion
+The system automatically merges FEC data when a candidate's FEC ID is provided. If multiple IDs exist for one person (e.g., across different cycles), the system handles the aggregation and merging of financial totals.

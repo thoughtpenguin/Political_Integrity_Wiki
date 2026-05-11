@@ -1,0 +1,88 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    function isNotBanned() {
+      return isAuthenticated() &&
+        (!exists(/databases/$(database)/documents/users/$(request.auth.uid)) ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isBanned != true);
+    }
+
+    // Candidates — public read, authenticated create
+    match /candidates/{candidateId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && isNotBanned();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+
+      // Accountability periods — public read, authenticated create
+      match /accountabilityPeriods/{periodId} {
+        allow read: if true;
+        allow create: if isAuthenticated() && isNotBanned();
+        allow update: if isAdmin();
+        allow delete: if isAdmin();
+
+        // Field metadata
+        match /fields/{fieldId} {
+          allow read: if true;
+          allow write: if isAdmin();
+        }
+      }
+    }
+
+    // Proposals — public read, authenticated create
+    match /proposals/{proposalId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && isNotBanned();
+      allow update: if isAdmin() ||
+        (isOwner(resource.data.authorUid) &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deletionRequested']));
+      allow delete: if isAdmin();
+
+      // Votes — public read, authenticated write (own votes only)
+      match /votes/{oderId} {
+        allow read: if true;
+        allow create: if isAuthenticated() && isNotBanned() && isOwner(oderId);
+        allow update: if isOwner(oderId);
+        allow delete: if isOwner(oderId) || isAdmin();
+      }
+    }
+
+    // Users — own profile read/create, admin write
+    match /users/{uid} {
+      allow read: if true;
+      allow create: if isOwner(uid);
+      allow update: if isOwner(uid) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isAdmin', 'isBanned', 'credibilityPoints']);
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // Audit logs — public read, no client write (functions only)
+    match /auditLogs/{logId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Elections — public read, admin write
+    match /elections/{electionId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
