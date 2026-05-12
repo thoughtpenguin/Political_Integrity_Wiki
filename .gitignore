@@ -41,5 +41,4 @@ yarn-error.log*
 next-env.d.ts
 
 .emulator_data
-.agents
 *.log

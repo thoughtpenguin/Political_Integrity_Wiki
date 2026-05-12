@@ -160,6 +160,7 @@ export default async function CandidatePage(props: { params: Promise<{ id: strin
               party: p.party,
               region: p.region,
               totalRaised: p.totalRaised,
+              totalPacMoney: p.totalPacMoney,
               corporatePacMoney: p.corporatePacMoney,
               peakNetAssets: p.peakNetAssets,
               peakStockValue: p.peakStockValue,

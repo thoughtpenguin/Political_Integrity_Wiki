@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/app/components/AuthProvider'
 import { httpsCallable } from 'firebase/functions'
 import { functions } from '@/lib/firebase-client'
+import IngestingModal from '@/app/components/IngestingModal'
 
 export default function CreateCandidateForm() {
   const { user } = useAuth()
@@ -58,6 +59,7 @@ export default function CreateCandidateForm() {
 
   return (
     <form onSubmit={handleSubmit}>
+      <IngestingModal isOpen={loading} />
       {error && (
         <div style={{ padding: '0.75rem 1rem', background: 'var(--danger-muted)', border: '1px solid var(--danger)', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontSize: '0.875rem', color: 'var(--danger)' }}>
           {error}
@@ -100,7 +102,7 @@ export default function CreateCandidateForm() {
             </p>
           </div>
           <button type="submit" className="btn btn-primary btn-lg" disabled={loading || !fecId.trim()}>
-            {loading ? 'Importing data from FEC...' : 'Import Candidate'}
+            Import Candidate
           </button>
         </div>
       ) : (
@@ -130,7 +132,7 @@ export default function CreateCandidateForm() {
             </p>
           )}
           <button type="submit" className="btn btn-primary btn-lg" disabled={loading || !name.trim()}>
-            {loading ? 'Creating...' : 'Create Candidate Page'}
+            Create Candidate Page
           </button>
         </div>
       )}

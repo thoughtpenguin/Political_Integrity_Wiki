@@ -11,6 +11,7 @@ interface PeriodOption {
   party?: string
   region?: string
   totalRaised?: number
+  totalPacMoney?: number
   corporatePacMoney?: number
   peakNetAssets?: number
   peakStockValue?: number
@@ -80,14 +81,21 @@ export default function AccountabilitySelector({ candidateId, periods }: { candi
           <div className="stat-label">Total Raised</div>
         </div>
         <div className="card stat-card">
+          <div className="stat-value">{formatCurrency(selected.totalPacMoney)}</div>
+          <div className="stat-label">Total PAC Money</div>
+        </div>
+        <div className="card stat-card">
           <div className={`stat-value ${selected.corporatePacMoney === 0 ? 'green' : ''}`}>
             {formatCurrency(selected.corporatePacMoney)}
           </div>
-          <div className="stat-label">Corporate PAC Money</div>
-        </div>
-        <div className="card stat-card">
-          <div className="stat-value">{formatCurrency(selected.peakNetAssets)}</div>
-          <div className="stat-label">Peak Net Assets</div>
+          <div className="stat-label">
+            Corporate PAC Money
+            {selected.corporatePacMoney === undefined && (
+              <span style={{ display: 'block', fontSize: '0.625rem', color: 'var(--text-muted)', fontWeight: 400, marginTop: '0.125rem' }}>
+                Community-contributed
+              </span>
+            )}
+          </div>
         </div>
         <div className="card stat-card">
           <div className={`stat-value ${selected.peakStockValue === 0 ? 'green' : ''}`}>

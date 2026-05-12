@@ -220,6 +220,7 @@ export interface AccountabilityPeriod {
   totalRaised?: number
   peakNetAssets?: number
   peakStockValue?: number
+  totalPacMoney?: number
   corporatePacMoney?: number
   earmarkedMoney?: number
   aipacMoney?: number
@@ -460,12 +461,20 @@ export const EDITABLE_FIELDS: FieldDefinition[] = [
     fecAutoFill: true,
   },
   {
-    id: 'corporate_pac_money',
-    name: 'Corporate PAC Money',
-    description: 'Total amount of money received from corporate PACs for this race (green if $0)',
+    id: 'total_pac_money',
+    name: 'Total PAC Money',
+    description: 'Total amount received from all PACs (corporate, labor, trade, ideological, etc.) for this race. Auto-filled from FEC data.',
     periodSpecific: true,
     applicablePositions: Object.keys(POSITION_LABELS) as Position[],
     fecAutoFill: true,
+  },
+  {
+    id: 'corporate_pac_money',
+    name: 'Corporate PAC Money',
+    description: 'Total amount received specifically from corporate PACs. The FEC API does not distinguish corporate PACs natively, so this value must be researched and contributed by the community. Green if $0.',
+    periodSpecific: true,
+    applicablePositions: Object.keys(POSITION_LABELS) as Position[],
+    fecAutoFill: false,
   },
   {
     id: 'donation_size_breakdown',

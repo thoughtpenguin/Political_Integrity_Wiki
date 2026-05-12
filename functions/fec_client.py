@@ -165,44 +165,6 @@ class FECClient:
         # Filter for earmarked contributions (conduit)
         return self._get_all_pages("/schedules/schedule_a/", params, max_pages=3)
 
-    def get_corporate_pac_total(self, candidate_id: str, cycle: Optional[int] = None) -> float:
-        """
-        Calculate the total corporate PAC money received by a candidate.
-        Uses Schedule A data filtered by contributor_type='other' (PACs),
-        then further filters for contributor_committee_type='C' (Corporation).
-        """
-        # First, find the candidate's principal campaign committee ID
-        candidate = self.get_candidate(candidate_id)
-        if not candidate:
-            return 0.0
-
-        principal_committees = candidate.get("principal_committees", [])
-        if not principal_committees:
-            return 0.0
-
-        committee_id = principal_committees[0].get("committee_id", "")
-        if not committee_id:
-            return 0.0
-
-        # Fetch Schedule A receipts from PACs (contributor_type='other')
-        params = {
-            "committee_id": committee_id,
-            "contributor_type": "other",
-            "sort": "-contribution_receipt_amount",
-        }
-        if cycle:
-            params["two_year_transaction_period"] = cycle
-
-        receipts = self._get_all_pages("/schedules/schedule_a/", params, max_pages=10)
-
-        # Filter for corporate PACs only (contributor_committee_type == 'C')
-        total_corporate = 0.0
-        for receipt in receipts:
-            if receipt.get("contributor_committee_type") == "C":
-                total_corporate += receipt.get("contribution_receipt_amount", 0) or 0
-
-        return total_corporate
-
 
 class CandidateIngester:
     """
@@ -271,15 +233,14 @@ class CandidateIngester:
                 if totals:
                     t = totals[0]
                     period["totalRaised"] = t.get("receipts", 0) or 0
+                    # Total PAC money (all types: corporate, labor, trade, etc.)
+                    period["totalPacMoney"] = t.get("other_political_committee_contributions", 0) or 0
                     period["fecDataFetched"] = True
-
-                # Get actual corporate PAC money (only committee_type 'C')
-                try:
-                    corp_pac = self.fec.get_corporate_pac_total(fec_id, cycle)
-                    period["corporatePacMoney"] = corp_pac
-                except Exception as e:
-                    print(f"Warning: Failed to fetch corporate PAC data for {fec_id} cycle {cycle}: {e}")
-                    period["corporatePacMoney"] = 0
+                    # Note: corporatePacMoney is NOT auto-filled because the FEC API
+                    # does not natively distinguish corporate PACs from other PAC types.
+                    # The contributor_committee_type field in Schedule A is unreliable
+                    # (almost always NULL), and contributor_type='other' is invalid.
+                    # This must be researched and contributed by the community.
 
                 # Get donation size breakdown
                 size_data = self.fec.get_schedule_a_by_size(fec_id, cycle)
