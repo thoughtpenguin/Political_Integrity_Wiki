@@ -438,7 +438,7 @@ export const EDITABLE_FIELDS: FieldDefinition[] = [
     type: 'string',
   },
   // Badges (period-agnostic)
-  ...BADGE_DEFINITIONS.map((b) => ({
+  ...BADGE_DEFINITIONS.map((b): FieldDefinition => ({
     id: `badge_${b.id}`,
     name: `Badge: ${b.name}`,
     description: b.description,
