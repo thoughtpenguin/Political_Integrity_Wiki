@@ -1,1 +1,1 @@
-export const BASE_URL = 'https://politicalintegrity.wiki';
+export const BASE_URL = 'https://wiki.politicalintegrity.us';
