@@ -4,13 +4,25 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { httpsCallable } from 'firebase/functions'
 import { functions } from '@/lib/firebase-client'
-import { POSITION_LABELS, type Position } from '@/lib/types'
+import { POSITION_LABELS } from '@/lib/types'
 import IngestingModal from './IngestingModal'
 
 interface Props {
   candidateId: string
   isOpen: boolean
   onClose: () => void
+}
+
+interface AddPeriodParams {
+  candidateId: string
+  fecId?: string
+  position?: string
+  yearStart?: number
+  yearEnd?: number
+  party?: string
+  region?: string
+  state?: string
+  result?: string
 }
 
 export default function AddAccountabilityPeriodModal({ candidateId, isOpen, onClose }: Props) {
@@ -29,27 +41,42 @@ export default function AddAccountabilityPeriodModal({ candidateId, isOpen, onCl
     const formData = new FormData(e.currentTarget)
     
     try {
-      const addFn = httpsCallable<any, any>(functions, 'add_accountability_period', {timeout: 600000})
+      const addFn = httpsCallable<AddPeriodParams, { success: boolean }>(functions, 'add_accountability_period', {timeout: 600000})
       
-      const params: any = { candidateId }
+      const params: AddPeriodParams = { candidateId }
       if (mode === 'fec') {
-        params.fecId = formData.get('fecId')
+        const fecIdVal = formData.get('fecId')
+        if (fecIdVal) params.fecId = fecIdVal as string
       } else {
-        params.position = formData.get('position')
-        params.yearStart = parseInt(formData.get('yearStart') as string)
-        params.yearEnd = parseInt(formData.get('yearEnd') as string)
-        params.party = formData.get('party')
-        params.region = formData.get('region')
-        params.state = formData.get('state')
-        params.result = formData.get('result')
+        const positionVal = formData.get('position')
+        if (positionVal) params.position = positionVal as string
+
+        const yearStartVal = formData.get('yearStart')
+        if (yearStartVal) params.yearStart = parseInt(yearStartVal as string)
+
+        const yearEndVal = formData.get('yearEnd')
+        if (yearEndVal) params.yearEnd = parseInt(yearEndVal as string)
+
+        const partyVal = formData.get('party')
+        if (partyVal) params.party = partyVal as string
+
+        const regionVal = formData.get('region')
+        if (regionVal) params.region = regionVal as string
+
+        const stateVal = formData.get('state')
+        if (stateVal) params.state = stateVal as string
+
+        const resultVal = formData.get('result')
+        if (resultVal) params.result = resultVal as string
       }
 
       await addFn(params)
       onClose()
       router.refresh()
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to add period:', err)
-      setError(err.message || 'An error occurred.')
+      const message = err instanceof Error ? err.message : 'An error occurred.'
+      setError(message)
       setLoading(false)
     }
   }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useAuth } from './AuthProvider'
 import ProfileModal from './ProfileModal'
 
@@ -30,12 +31,12 @@ export default function AuthButton() {
               textAlign: 'left'
             }}
           >
-            <img
+            <Image
               src={user.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'}
-              alt={user.displayName}
+              alt={user.displayName || 'User Profile'}
+              width={32}
+              height={32}
               style={{
-                width: 32,
-                height: 32,
                 borderRadius: '50%',
                 border: '2px solid var(--border-color)',
                 objectFit: 'cover'
@@ -54,6 +55,7 @@ export default function AuthButton() {
         </div>
 
         <ProfileModal 
+          key={user.uid + '_' + isProfileOpen}
           isOpen={isProfileOpen || !!user.isNewUser} 
           onClose={() => setIsProfileOpen(false)}
           isInitialSetup={!!user.isNewUser}

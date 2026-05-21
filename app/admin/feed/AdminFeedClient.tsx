@@ -7,10 +7,25 @@ import { functions } from '@/lib/firebase-client'
 import { useAuth } from '@/app/components/AuthProvider'
 import ReportActionButtons from './ReportActionButtons'
 
+export interface AdminReport {
+  id: string
+  type: 'period' | 'proposal'
+  targetId: string
+  candidateId: string
+  candidateName: string
+  periodName?: string
+  proposalValue?: string
+  upvoteCount?: number
+  reporterUid: string
+  reason?: string
+  status: 'pending' | 'approved' | 'rejected'
+  createdAt: string
+}
+
 export default function AdminFeedClient() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
-  const [reports, setReports] = useState<any[]>([])
+  const [reports, setReports] = useState<AdminReport[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -23,7 +38,7 @@ export default function AdminFeedClient() {
     async function fetchReports() {
       if (!user?.isAdmin) return
       try {
-        const getReportsFn = httpsCallable<any, any>(functions, 'admin_get_reports')
+        const getReportsFn = httpsCallable<undefined, { reports: AdminReport[] }>(functions, 'admin_get_reports')
         const result = await getReportsFn()
         setReports(result.data.reports || [])
       } catch (err) {
@@ -81,7 +96,7 @@ export default function AdminFeedClient() {
                 {report.type === 'proposal' && (
                   <div style={{ marginTop: '0.5rem', padding: '0.75rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
                     <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Reported Proposal:</div>
-                    <div style={{ fontSize: '1rem' }}>"{report.proposalValue}"</div>
+                    <div style={{ fontSize: '1rem' }}>&quot;{report.proposalValue}&quot;</div>
                     <div className="text-muted" style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>
                       {report.upvoteCount} upvotes
                     </div>

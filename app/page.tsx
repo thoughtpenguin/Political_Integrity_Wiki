@@ -1,8 +1,20 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import SearchBar from './components/SearchBar'
 import AdminFeedLink from './components/AdminFeedLink'
 import { getTopEditors, getAllCandidates, getUpcomingElections } from '@/lib/data'
-import { POSITION_LABELS } from '@/lib/types'
+import { POSITION_LABELS, type Position } from '@/lib/types'
+
+function getPartyLabel(party?: string) {
+  if (!party) return ''
+  const p = party.toLowerCase()
+  if (p.includes('democrat')) return 'D'
+  if (p.includes('republican')) return 'R'
+  if (p.includes('independent')) return 'I'
+  if (p.includes('libertarian')) return 'L'
+  if (p.includes('green')) return 'G'
+  return party
+}
 
 export default async function HomePage(props: { searchParams: Promise<{ level?: string; state?: string }> }) {
   const { level, state } = await props.searchParams
@@ -28,23 +40,30 @@ export default async function HomePage(props: { searchParams: Promise<{ level?: 
     <div className="animate-fade-in">
       {/* Hero Section */}
       <section className="hero">
+        <div className="glow-orb glow-orb-primary"></div>
+        <div className="glow-orb glow-orb-secondary"></div>
+        <div className="hero-badge">
+          <span>✨ Crowdsourced political tracking</span>
+        </div>
         <h1>The Integrity Wiki</h1>
-        <p>
+        <p style={{ position: 'relative', zIndex: 1 }}>
           A crowdsourced campaign finance integrity index for every politician in America.
           Track PAC money, stock trades, corruption pledges, and more — verified by the community.
         </p>
-        <div className="hero-search">
+        <div className="hero-search" style={{ position: 'relative', zIndex: 1 }}>
           <SearchBar />
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.5rem' }}>
-          <Link href="/create" className="btn btn-primary btn-lg">
+        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.5rem', position: 'relative', zIndex: 1 }}>
+          <Link href="/create" className="btn btn-primary btn-lg" style={{ boxShadow: '0 0 15px rgba(99, 102, 241, 0.3)' }}>
             + Create Candidate Page
           </Link>
           <Link href="/how-it-works" className="btn btn-secondary btn-lg">
             How It Works
           </Link>
         </div>
-        <AdminFeedLink />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <AdminFeedLink />
+        </div>
       </section>
 
       <div className="container">
@@ -60,25 +79,22 @@ export default async function HomePage(props: { searchParams: Promise<{ level?: 
             Upcoming Races
           </h2>
 
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+          <div className="segment-container" style={{ marginBottom: '1.5rem' }}>
             <Link 
               href="/?level=federal" 
-              className={`btn btn-sm ${selectedLevel === 'federal' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ textDecoration: 'none' }}
+              className={`segment-btn ${selectedLevel === 'federal' ? 'active' : ''}`}
             >
               Federal
             </Link>
             <Link 
               href="/?level=state" 
-              className={`btn btn-sm ${selectedLevel === 'state' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ textDecoration: 'none' }}
+              className={`segment-btn ${selectedLevel === 'state' ? 'active' : ''}`}
             >
               State
             </Link>
             <Link 
               href="/?level=local" 
-              className={`btn btn-sm ${selectedLevel === 'local' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ textDecoration: 'none' }}
+              className={`segment-btn ${selectedLevel === 'local' ? 'active' : ''}`}
             >
               Local
             </Link>
@@ -112,19 +128,19 @@ export default async function HomePage(props: { searchParams: Promise<{ level?: 
 
         {/* Stats */}
         <div className="stats-grid">
-          <div className="card stat-card">
+          <div className="card-glass stat-card stat-blue">
             <div className="stat-value">{recentCandidates.length}</div>
             <div className="stat-label">Candidates Tracked</div>
           </div>
-          <div className="card stat-card">
+          <div className="card-glass stat-card stat-green">
             <div className="stat-value">{topEditors.length}</div>
             <div className="stat-label">Active Editors</div>
           </div>
-          <div className="card stat-card">
+          <div className="card-glass stat-card stat-orange">
             <div className="stat-value">21</div>
             <div className="stat-label">Positions Covered</div>
           </div>
-          <div className="card stat-card">
+          <div className="card-glass stat-card stat-purple">
             <div className="stat-value">8</div>
             <div className="stat-label">Integrity Badges</div>
           </div>
@@ -170,6 +186,16 @@ export default async function HomePage(props: { searchParams: Promise<{ level?: 
                           <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', textTransform: 'capitalize' }}>
                             {c.status?.replace('_', ' ') || 'Unknown status'}
                           </div>
+                          {c.latestPeriod && (
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.125rem' }}>
+                              {POSITION_LABELS[c.latestPeriod.position as Position] || c.latestPeriod.position}
+                              {c.latestPeriod.party || c.latestPeriod.state ? ' • ' : ''}
+                              {c.latestPeriod.party ? `${getPartyLabel(c.latestPeriod.party)}` : ''}
+                              {c.latestPeriod.party && c.latestPeriod.state ? '-' : ''}
+                              {c.latestPeriod.state ? c.latestPeriod.state : ''}
+                              {` (${c.latestPeriod.yearStart} - ${c.latestPeriod.yearEnd})`}
+                            </div>
+                          )}
                         </div>
                       </div>
                       
@@ -184,7 +210,7 @@ export default async function HomePage(props: { searchParams: Promise<{ level?: 
                           gap: '0.25rem'
                         }}>
                           {Object.entries(c.topFields).map(([name, val], idx) => {
-                            if (name === 'Photo') return null; // Don't show URL as text
+                            if (name === 'Photo' || name === 'Current Status') return null; // Don't show URL or status as text
                             let displayVal = val;
                             if (val.startsWith('[') || val.startsWith('{')) displayVal = 'Data provided';
                             return (
@@ -222,12 +248,18 @@ export default async function HomePage(props: { searchParams: Promise<{ level?: 
                 topEditors.map((editor, i) => (
                   <div key={editor.uid} className="leaderboard-item">
                     <span className={`leaderboard-rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : ''}`}>
-                      #{i + 1}
+                      {i <= 2 ? i + 1 : `#${i + 1}`}
                     </span>
                     {editor.photoURL ? (
-                      <img src={editor.photoURL} alt="" className="leaderboard-avatar" />
+                      <Image
+                        src={editor.photoURL}
+                        alt={editor.displayName || 'Editor avatar'}
+                        width={36}
+                        height={36}
+                        className={`leaderboard-avatar ${i === 0 ? 'gold-ring' : ''}`}
+                      />
                     ) : (
-                      <div className="leaderboard-avatar" style={{
+                      <div className={`leaderboard-avatar ${i === 0 ? 'gold-ring' : ''}`} style={{
                         background: 'var(--bg-secondary)', display: 'flex',
                         alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem',
                       }}>

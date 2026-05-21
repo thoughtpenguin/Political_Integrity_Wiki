@@ -14,13 +14,17 @@ export default function ReportProposalAction({ proposalId, candidateId }: { prop
 
     setLoading(true)
     try {
-      const reportFn = httpsCallable<any, any>(functions, 'report_proposal')
+      const reportFn = httpsCallable<{
+        proposalId: string
+        candidateId: string
+      }, { success: boolean }>(functions, 'report_proposal')
       await reportFn({ proposalId, candidateId })
       alert('Proposal reported successfully.')
       router.refresh()
-    } catch (err: any) {
+    } catch (err) {
       console.error(err)
-      alert(err.message || 'Failed to report proposal')
+      const message = err instanceof Error ? err.message : 'Failed to report proposal'
+      alert(message)
     } finally {
       setLoading(false)
     }

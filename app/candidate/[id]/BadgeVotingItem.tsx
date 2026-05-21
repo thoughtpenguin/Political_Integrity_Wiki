@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { BadgeStatus, Proposal } from '@/lib/types'
+import type { BadgeStatus, Proposal, Badge } from '@/lib/types'
 import BadgeProposalList from './BadgeProposalList'
 
 export default function BadgeVotingItem({
@@ -11,7 +11,7 @@ export default function BadgeVotingItem({
   proposals,
 }: {
   candidateId: string
-  badge: any
+  badge: Omit<Badge, 'status'>
   currentStatus: BadgeStatus
   proposals: Proposal[]
 }) {

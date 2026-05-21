@@ -19,16 +19,16 @@ export default function IngestingModal({ isOpen }: IngestingModalProps) {
   const [messageIndex, setMessageIndex] = useState(0)
 
   useEffect(() => {
-    if (!isOpen) {
-      setMessageIndex(0)
-      return
-    }
+    if (!isOpen) return
 
     const interval = setInterval(() => {
       setMessageIndex((prev) => (prev + 1) % MESSAGES.length)
     }, 2500)
 
-    return () => clearInterval(interval)
+    return () => {
+      clearInterval(interval)
+      setMessageIndex(0)
+    }
   }, [isOpen])
 
   if (!isOpen) return null
@@ -44,7 +44,7 @@ export default function IngestingModal({ isOpen }: IngestingModalProps) {
         
         <h2 className="modal-title">Ingesting Candidate Data</h2>
         <p className="modal-description text-secondary">
-          We're fetching records from the FEC and aggregating financial data. This process involves cross-referencing multiple databases to ensure accuracy.
+          We&apos;re fetching records from the FEC and aggregating financial data. This process involves cross-referencing multiple databases to ensure accuracy.
         </p>
         
         <div className="loader-container">
@@ -59,7 +59,7 @@ export default function IngestingModal({ isOpen }: IngestingModalProps) {
         </div>
 
         <p className="modal-footer text-muted">
-          This usually takes around 1-3 minutes. Please don't close this window.
+          This usually takes around 1-3 minutes. Please don&apos;t close this window.
         </p>
       </div>
     </div>

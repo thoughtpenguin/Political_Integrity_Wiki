@@ -41,9 +41,10 @@ export default function CreateCandidateForm() {
         const result = await createFn({ name })
         router.push(`/candidate/${result.data.candidateId}`)
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Submission failed:', err)
-      setError(err.message || 'An unexpected error occurred.')
+      const message = err instanceof Error ? err.message : 'An unexpected error occurred.'
+      setError(message)
       setLoading(false)
     }
   }

@@ -31,8 +31,9 @@ function formatCurrency(amount: number | undefined): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount)
 }
 
-function DonationBar({ label, amount, total, color }: { label: string; amount: number; total: number; color: string }) {
-  const pct = total > 0 ? (amount / total) * 100 : 0
+function DonationBar({ label, amount, total, color }: { label: string; amount: number | undefined; total: number; color: string }) {
+  const validAmount = amount || 0
+  const pct = total > 0 ? (validAmount / total) * 100 : 0
   return (
     <div style={{ marginBottom: '0.5rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', marginBottom: '0.25rem' }}>
@@ -59,13 +60,35 @@ export default function AccountabilitySelector({
 
   if (!selected) return null
 
-  const sizeTotal = selected.donationSizeBreakdown
-    ? Object.values(selected.donationSizeBreakdown).reduce((a, b) => a + b, 0)
-    : 0
+  // Ensure default structures are pre-populated so legacy or manual entries with missing keys don't glitch or crash
+  const donationSize = selected.donationSizeBreakdown || {
+    under200: 0,
+    from200to499: 0,
+    from500to999: 0,
+    from1000to1999: 0,
+    from2000plus: 0
+  }
+  const sizeTotal = (donationSize.under200 || 0) +
+                    (donationSize.from200to499 || 0) +
+                    (donationSize.from500to999 || 0) +
+                    (donationSize.from1000to1999 || 0) +
+                    (donationSize.from2000plus || 0)
 
-  const locTotal = selected.donationLocationBreakdown
-    ? selected.donationLocationBreakdown.inState + selected.donationLocationBreakdown.outOfState
-    : 0
+  const donationLocation = selected.donationLocationBreakdown || {
+    inState: 0,
+    outOfState: 0
+  }
+  const locTotal = (donationLocation.inState || 0) + (donationLocation.outOfState || 0)
+
+  const pacType = selected.pacTypeBreakdown || {
+    corporate: 0,
+    political: 0,
+    trade: 0,
+    lobbyist: 0,
+    ideological: 0,
+    other: 0
+  }
+  const pacTypeTotal = selected.totalPacMoney || 1
 
   return (
     <div>
@@ -92,16 +115,16 @@ export default function AccountabilitySelector({
       {/* Financial Summary */}
       <div className="stats-grid" style={{ marginBottom: '1.5rem' }}>
         <div className="card stat-card">
-          <div className="stat-value">{formatCurrency(selected.totalRaised)}</div>
+          <div className="stat-value">{formatCurrency(selected.totalRaised || 0)}</div>
           <div className="stat-label">Total Raised</div>
         </div>
         <div className="card stat-card">
-          <div className="stat-value">{formatCurrency(selected.totalPacMoney)}</div>
+          <div className="stat-value">{formatCurrency(selected.totalPacMoney || 0)}</div>
           <div className="stat-label">Total PAC Money</div>
         </div>
         <div className="card stat-card">
           <div className={`stat-value ${selected.corporatePacMoney === 0 ? 'green' : ''}`}>
-            {formatCurrency(selected.corporatePacMoney)}
+            {formatCurrency(selected.corporatePacMoney || 0)}
           </div>
           <div className="stat-label">
             Corporate PAC Money
@@ -114,12 +137,12 @@ export default function AccountabilitySelector({
         </div>
         <div className="card stat-card">
           <div className={`stat-value ${selected.peakStockValue === 0 ? 'green' : ''}`}>
-            {formatCurrency(selected.peakStockValue)}
+            {formatCurrency(selected.peakStockValue || 0)}
           </div>
           <div className="stat-label">Peak Stock Value</div>
         </div>
         <div className="card stat-card">
-          <div className="stat-value">{formatCurrency(selected.peakNetAssets)}</div>
+          <div className="stat-value">{formatCurrency(selected.peakNetAssets || 0)}</div>
           <div className="stat-label">Peak Net Assets</div>
         </div>
       </div>
@@ -129,7 +152,7 @@ export default function AccountabilitySelector({
         <div className="card" style={{ padding: '1rem', borderLeft: '4px solid var(--accent-primary)' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Small Donor Strength</div>
           <div style={{ fontWeight: 700, marginTop: '0.25rem', fontSize: '1.25rem' }}>
-            {sizeTotal > 0 ? `${((selected.donationSizeBreakdown?.under200 || 0) / sizeTotal * 100).toFixed(1)}%` : 'Unknown'}
+            {sizeTotal > 0 ? `${((donationSize.under200 || 0) / sizeTotal * 100).toFixed(1)}%` : 'Unknown'}
           </div>
           <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)', marginTop: '0.125rem' }}>Donations under $200</div>
         </div>
@@ -137,14 +160,14 @@ export default function AccountabilitySelector({
         <div className="card" style={{ padding: '1rem', borderLeft: '4px solid var(--success)' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Local Support Index</div>
           <div style={{ fontWeight: 700, marginTop: '0.25rem', fontSize: '1.25rem' }}>
-            {locTotal > 0 ? `${((selected.donationLocationBreakdown?.inState || 0) / locTotal * 100).toFixed(1)}%` : 'Unknown'}
+            {locTotal > 0 ? `${((donationLocation.inState || 0) / locTotal * 100).toFixed(1)}%` : 'Unknown'}
           </div>
           <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)', marginTop: '0.125rem' }}>In-state vs. Out-of-state</div>
         </div>
 
-        <div className="card" style={{ padding: '1rem', borderLeft: `4px solid ${selected.corporatePacMoney === 0 ? 'var(--success)' : 'var(--danger)'}` }}>
+        <div className="card" style={{ padding: '1rem', borderLeft: `4px solid ${selected.corporatePacMoney === 0 ? 'var(--success)' : (selected.corporatePacMoney === undefined ? 'var(--text-secondary)' : 'var(--danger)')}` }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Corporate PAC Index</div>
-          <div style={{ fontWeight: 700, marginTop: '0.25rem', fontSize: '1.25rem', color: selected.corporatePacMoney === 0 ? 'var(--success)' : 'var(--danger)' }}>
+          <div style={{ fontWeight: 700, marginTop: '0.25rem', fontSize: '1.25rem', color: selected.corporatePacMoney === 0 ? 'var(--success)' : (selected.corporatePacMoney === undefined ? 'var(--text-secondary)' : 'var(--danger)') }}>
             {selected.totalRaised && selected.totalRaised > 0 
               ? `${((selected.corporatePacMoney || 0) / selected.totalRaised * 100).toFixed(1)}%` 
               : '0.0%'}
@@ -156,7 +179,7 @@ export default function AccountabilitySelector({
           <div className="card" style={{ padding: '1rem', borderLeft: `4px solid ${selected.stockTradingVolume === 0 ? 'var(--success)' : 'var(--warning)'}` }}>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Stock Volume</div>
             <div style={{ fontWeight: 700, marginTop: '0.25rem', fontSize: '1.25rem', color: selected.stockTradingVolume === 0 ? 'var(--success)' : 'var(--text-primary)' }}>
-              {formatCurrency(selected.stockTradingVolume)}
+              {formatCurrency(selected.stockTradingVolume || 0)}
             </div>
             <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)', marginTop: '0.125rem' }}>Traded while in office</div>
           </div>
@@ -178,11 +201,11 @@ export default function AccountabilitySelector({
         )}
         <div className="card" style={{ padding: '1rem' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Earmarked Money</div>
-          <div style={{ fontWeight: 700, marginTop: '0.25rem' }}>{formatCurrency(selected.earmarkedMoney)}</div>
+          <div style={{ fontWeight: 700, marginTop: '0.25rem' }}>{formatCurrency(selected.earmarkedMoney || 0)}</div>
         </div>
         <div className="card" style={{ padding: '1rem' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>AIPAC Money</div>
-          <div style={{ fontWeight: 700, marginTop: '0.25rem' }}>{formatCurrency(selected.aipacMoney)}</div>
+          <div style={{ fontWeight: 700, marginTop: '0.25rem' }}>{formatCurrency(selected.aipacMoney || 0)}</div>
         </div>
       </div>
 
@@ -192,11 +215,11 @@ export default function AccountabilitySelector({
         {selected.donationSizeBreakdown && sizeTotal > 0 && (
           <div className="card">
             <h4 style={{ marginBottom: '1rem', fontSize: '0.9375rem' }}>Donation Size Breakdown</h4>
-            <DonationBar label="Under $200" amount={selected.donationSizeBreakdown.under200} total={sizeTotal} color="#6366f1" />
-            <DonationBar label="$200–$499" amount={selected.donationSizeBreakdown.from200to499} total={sizeTotal} color="#818cf8" />
-            <DonationBar label="$500–$999" amount={selected.donationSizeBreakdown.from500to999} total={sizeTotal} color="#a5b4fc" />
-            <DonationBar label="$1,000–$1,999" amount={selected.donationSizeBreakdown.from1000to1999} total={sizeTotal} color="#f59e0b" />
-            <DonationBar label="$2,000+" amount={selected.donationSizeBreakdown.from2000plus} total={sizeTotal} color="#ef4444" />
+            <DonationBar label="Under $200" amount={donationSize.under200} total={sizeTotal} color="#6366f1" />
+            <DonationBar label="$200–$499" amount={donationSize.from200to499} total={sizeTotal} color="#818cf8" />
+            <DonationBar label="$500–$999" amount={donationSize.from500to999} total={sizeTotal} color="#a5b4fc" />
+            <DonationBar label="$1,000–$1,999" amount={donationSize.from1000to1999} total={sizeTotal} color="#f59e0b" />
+            <DonationBar label="$2,000+" amount={donationSize.from2000plus} total={sizeTotal} color="#ef4444" />
           </div>
         )}
 
@@ -204,8 +227,8 @@ export default function AccountabilitySelector({
         {selected.donationLocationBreakdown && locTotal > 0 && (
           <div className="card">
             <h4 style={{ marginBottom: '1rem', fontSize: '0.9375rem' }}>Donation Location Breakdown</h4>
-            <DonationBar label="In-State" amount={selected.donationLocationBreakdown.inState} total={locTotal} color="#10b981" />
-            <DonationBar label="Out-of-State" amount={selected.donationLocationBreakdown.outOfState} total={locTotal} color="#f59e0b" />
+            <DonationBar label="In-State" amount={donationLocation.inState} total={locTotal} color="#10b981" />
+            <DonationBar label="Out-of-State" amount={donationLocation.outOfState} total={locTotal} color="#f59e0b" />
           </div>
         )}
 
@@ -214,12 +237,12 @@ export default function AccountabilitySelector({
           <div className="card" style={{ gridColumn: 'span 2' }}>
             <h4 style={{ marginBottom: '1rem', fontSize: '0.9375rem' }}>PAC Type Breakdown</h4>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-              <DonationBar label="Corporate" amount={selected.pacTypeBreakdown.corporate} total={selected.totalPacMoney || 1} color="#6366f1" />
-              <DonationBar label="Political/Party" amount={selected.pacTypeBreakdown.political} total={selected.totalPacMoney || 1} color="#10b981" />
-              <DonationBar label="Trade Association" amount={selected.pacTypeBreakdown.trade} total={selected.totalPacMoney || 1} color="#f59e0b" />
-              <DonationBar label="Lobbyist" amount={selected.pacTypeBreakdown.lobbyist} total={selected.totalPacMoney || 1} color="#ef4444" />
-              <DonationBar label="Ideological" amount={selected.pacTypeBreakdown.ideological} total={selected.totalPacMoney || 1} color="#8b5cf6" />
-              <DonationBar label="Other" amount={selected.pacTypeBreakdown.other} total={selected.totalPacMoney || 1} color="#6b7280" />
+              <DonationBar label="Corporate" amount={pacType.corporate} total={pacTypeTotal} color="#6366f1" />
+              <DonationBar label="Political/Party" amount={pacType.political} total={pacTypeTotal} color="#10b981" />
+              <DonationBar label="Trade Association" amount={pacType.trade} total={pacTypeTotal} color="#f59e0b" />
+              <DonationBar label="Lobbyist" amount={pacType.lobbyist} total={pacTypeTotal} color="#ef4444" />
+              <DonationBar label="Ideological" amount={pacType.ideological} total={pacTypeTotal} color="#8b5cf6" />
+              <DonationBar label="Other" amount={pacType.other} total={pacTypeTotal} color="#6b7280" />
             </div>
           </div>
         )}

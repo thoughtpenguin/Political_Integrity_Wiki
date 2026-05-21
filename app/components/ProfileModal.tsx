@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import Image from 'next/image'
 import { useAuth } from './AuthProvider'
 import { db } from '@/lib/firebase-client'
 import { doc, updateDoc } from 'firebase/firestore'
@@ -13,14 +14,8 @@ interface ProfileModalProps {
 
 export default function ProfileModal({ isOpen, onClose, isInitialSetup = false }: ProfileModalProps) {
   const { user } = useAuth()
-  const [displayName, setDisplayName] = useState('')
+  const [displayName, setDisplayName] = useState(() => user?.displayName || '')
   const [isSaving, setIsSaving] = useState(false)
-
-  useEffect(() => {
-    if (user) {
-      setDisplayName(user.displayName || '')
-    }
-  }, [user, isOpen])
 
   if (!isOpen || !user) return null
 
@@ -61,12 +56,12 @@ export default function ProfileModal({ isOpen, onClose, isInitialSetup = false }
 
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: 'left' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-            <img
+            <Image
               src={user.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'}
-              alt={user.displayName}
+              alt={user.displayName || 'Profile Picture'}
+              width={80}
+              height={80}
               style={{
-                width: 80,
-                height: 80,
                 borderRadius: '50%',
                 objectFit: 'cover',
                 border: '2px solid var(--border-color)',

@@ -62,12 +62,36 @@ class FECClient:
         params.setdefault("per_page", 100)
 
         url = f"{self.BASE_URL}{endpoint}"
-        response = requests.get(url, params=params, timeout=600)
-        response.raise_for_status()
-        data = response.json()
+        
+        max_attempts = 3
+        data = None
+        for attempt in range(max_attempts):
+            try:
+                response = requests.get(url, params=params, timeout=15.0)
+                
+                # Check for transient rate limit or server error statuses
+                if response.status_code in (429, 500, 502, 503, 504) and attempt < max_attempts - 1:
+                    import random
+                    sleep_time = (2 ** (attempt + 1)) + random.uniform(0.1, 1.0)
+                    print(f"FEC API warning: Received status {response.status_code} for {endpoint}. Retrying in {sleep_time:.2f}s... (Attempt {attempt + 1}/{max_attempts})")
+                    time.sleep(sleep_time)
+                    continue
+                
+                response.raise_for_status()
+                data = response.json()
+                break
+            except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as req_err:
+                if attempt < max_attempts - 1:
+                    import random
+                    sleep_time = (2 ** (attempt + 1)) + random.uniform(0.1, 1.0)
+                    print(f"FEC API warning: Connection/Timeout error for {endpoint}: {req_err}. Retrying in {sleep_time:.2f}s... (Attempt {attempt + 1}/{max_attempts})")
+                    time.sleep(sleep_time)
+                    continue
+                else:
+                    raise
 
         # Store in cache
-        if self.db:
+        if self.db and data is not None:
             self.db.collection("fec_cache").document(doc_id).set({
                 "endpoint": endpoint,
                 "params": cache_params,
@@ -259,9 +283,41 @@ class CandidateIngester:
                 "region": self._build_region(office, state, district),
                 "result": self._map_result(entry.get("incumbent_challenge_full", "")),
                 "fecDataFetched": False,
+                # Default zeroed financial values for schema consistency
+                "totalRaised": 0,
+                "totalPacMoney": 0,
+                "corporatePacMoney": 0,
+                "peakNetAssets": 0,
+                "peakStockValue": 0,
+                "stockTradingVolume": 0,
+                "earmarkedMoney": 0,
+                "aipacMoney": 0,
+                "donationSizeBreakdown": {
+                    "under200": 0,
+                    "from200to499": 0,
+                    "from500to999": 0,
+                    "from1000to1999": 0,
+                    "from2000plus": 0
+                },
+                "donationLocationBreakdown": {
+                    "inState": 0,
+                    "outOfState": 0
+                },
+                "pacTypeBreakdown": {
+                    "corporate": 0,
+                    "political": 0,
+                    "trade": 0,
+                    "lobbyist": 0,
+                    "ideological": 0,
+                    "other": 0
+                },
+                "topPacDonors": []
             }
 
-            # Fetch financial data for this cycle
+            # Track unitemized donations for size breakdown (derived from totals)
+            unitemized = 0
+
+            # 1. Fetch financial totals
             try:
                 totals = self.fec.get_candidate_totals(fec_id, cycle)
                 if totals:
@@ -269,35 +325,38 @@ class CandidateIngester:
                     period["totalRaised"] = t.get("receipts", 0) or 0
                     # Total PAC money (all types: corporate, labor, trade, etc.)
                     period["totalPacMoney"] = t.get("other_political_committee_contributions", 0) or 0
+                    unitemized = t.get("individual_unitemized_contributions", 0) or 0
                     period["fecDataFetched"] = True
-                    # Note: corporatePacMoney is NOT auto-filled because the FEC API
-                    # does not natively distinguish corporate PACs from other PAC types.
-                    # The contributor_committee_type field in Schedule A is unreliable
-                    # (almost always NULL), and contributor_type='other' is invalid.
-                    # This must be researched and contributed by the community.
+            except Exception as e:
+                print(f"Warning: Failed to fetch candidate totals for {fec_id} cycle {cycle}: {e}")
 
-                # Get donation size breakdown
+            # 2. Get donation size breakdown
+            try:
                 size_data = self.fec.get_schedule_a_by_size(fec_id, cycle)
                 if size_data:
-                    unitemized = t.get("individual_unitemized_contributions", 0) or 0
                     period["donationSizeBreakdown"] = self._process_size_breakdown(
                         size_data, cycle, unitemized
                     )
+            except Exception as e:
+                print(f"Warning: Failed to fetch size breakdown for {fec_id} cycle {cycle}: {e}")
 
-                # Get donation location breakdown
+            # 3. Get donation location breakdown
+            try:
                 state_data = self.fec.get_schedule_a_by_state(fec_id, cycle)
                 if state_data:
                     period["donationLocationBreakdown"] = self._process_state_breakdown(
                         state_data, state, cycle
                     )
+            except Exception as e:
+                print(f"Warning: Failed to fetch location breakdown for {fec_id} cycle {cycle}: {e}")
 
-                # Get top PAC donors
+            # 4. Get top PAC donors
+            try:
                 pac_data = self.fec.get_pac_contributions_to_candidate(fec_id, cycle)
                 if pac_data:
                     period["topPacDonors"] = self._process_pac_donors(pac_data)
-
             except Exception as e:
-                print(f"Warning: Failed to fetch financial data for {fec_id} cycle {cycle}: {e}")
+                print(f"Warning: Failed to fetch PAC contributions for {fec_id} cycle {cycle}: {e}")
 
             periods.append(period)
 

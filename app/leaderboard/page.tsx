@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import { getTopEditors } from '@/lib/data'
 
 export const metadata: Metadata = {
@@ -31,7 +32,13 @@ export default async function LeaderboardPage() {
                 #{i + 1}
               </span>
               {editor.photoURL ? (
-                <img src={editor.photoURL} alt="" className="leaderboard-avatar" />
+                <Image
+                  src={editor.photoURL}
+                  alt={editor.displayName || 'Editor avatar'}
+                  width={36}
+                  height={36}
+                  className="leaderboard-avatar"
+                />
               ) : (
                 <div className="leaderboard-avatar" style={{
                   background: 'var(--bg-secondary)', display: 'flex',

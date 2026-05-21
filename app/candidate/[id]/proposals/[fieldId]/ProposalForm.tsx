@@ -25,7 +25,6 @@ export default function ProposalForm({
   const [loading, setLoading] = useState(false)
 
   const field = EDITABLE_FIELDS.find(f => f.id === fieldId)
-  const isPhoto = field?.type === 'photo'
   const isNumber = field?.type === 'number'
   const isList = field?.type === 'json'
   const citationOptional = field?.citationOptional
@@ -70,7 +69,7 @@ export default function ProposalForm({
             return
           }
         }
-      } catch (e) {
+      } catch {
         alert('Please enter valid JSON data for this field')
         setLoading(false)
         return
@@ -122,7 +121,7 @@ export default function ProposalForm({
               className="btn btn-secondary btn-xs" 
               onClick={() => setNewValue('Unknown')}
             >
-              Set to "Unknown"
+              Set to &quot;Unknown&quot;
             </button>
             {field?.id === 'top_pac_donors' && (
               <button 

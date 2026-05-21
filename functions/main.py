@@ -385,6 +385,35 @@ def add_accountability_period(req: https_fn.CallableRequest) -> dict:
             "region": req.data.get("region", ""),
             "state": req.data.get("state", ""),
             "fecDataFetched": False,
+            # Default zeroed financial values for schema consistency
+            "totalRaised": 0,
+            "totalPacMoney": 0,
+            "corporatePacMoney": 0,
+            "peakNetAssets": 0,
+            "peakStockValue": 0,
+            "stockTradingVolume": 0,
+            "earmarkedMoney": 0,
+            "aipacMoney": 0,
+            "donationSizeBreakdown": {
+                "under200": 0,
+                "from200to499": 0,
+                "from500to999": 0,
+                "from1000to1999": 0,
+                "from2000plus": 0
+            },
+            "donationLocationBreakdown": {
+                "inState": 0,
+                "outOfState": 0
+            },
+            "pacTypeBreakdown": {
+                "corporate": 0,
+                "political": 0,
+                "trade": 0,
+                "lobbyist": 0,
+                "ideological": 0,
+                "other": 0
+            },
+            "topPacDonors": []
         }]
 
     # Deduct points if necessary

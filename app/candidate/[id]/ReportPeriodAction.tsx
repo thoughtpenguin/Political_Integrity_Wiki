@@ -14,13 +14,17 @@ export default function ReportPeriodAction({ candidateId, periodId }: { candidat
 
     setLoading(true)
     try {
-      const reportFn = httpsCallable<any, any>(functions, 'report_accountability_period')
+      const reportFn = httpsCallable<{
+        candidateId: string
+        periodId: string
+      }, { success: boolean }>(functions, 'report_accountability_period')
       await reportFn({ candidateId, periodId })
       alert('Period reported successfully.')
       router.refresh()
-    } catch (err: any) {
+    } catch (err) {
       console.error(err)
-      alert(err.message || 'Failed to report period')
+      const message = err instanceof Error ? err.message : 'Failed to report period'
+      alert(message)
     } finally {
       setLoading(false)
     }

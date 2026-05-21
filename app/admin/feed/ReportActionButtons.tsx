@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { httpsCallable } from 'firebase/functions'
 import { functions } from '@/lib/firebase-client'
+import { AdminReport } from './AdminFeedClient'
 
-export default function ReportActionButtons({ report, onResolved }: { report: any, onResolved: () => void }) {
+export default function ReportActionButtons({ report, onResolved }: { report: AdminReport, onResolved: () => void }) {
   const [loading, setLoading] = useState(false)
   const [banModalOpen, setBanModalOpen] = useState(false)
   const [banDuration, setBanDuration] = useState('7')
@@ -31,7 +31,13 @@ export default function ReportActionButtons({ report, onResolved }: { report: an
     setBanModalOpen(false)
     try {
       const fnName = report.type === 'period' ? 'admin_resolve_period_report' : 'admin_resolve_proposal_report'
-      const resolveFn = httpsCallable<any, any>(functions, fnName)
+      const resolveFn = httpsCallable<{
+        reportId: string
+        decision: 'approve' | 'reject'
+        banUser: boolean
+        banDurationDays: number
+        permanentBan: boolean
+      }, { success: boolean }>(functions, fnName)
       
       await resolveFn({
         reportId: report.id,
@@ -42,9 +48,10 @@ export default function ReportActionButtons({ report, onResolved }: { report: an
       })
       
       onResolved()
-    } catch (err: any) {
+    } catch (err) {
       console.error(err)
-      alert(err.message || 'Failed to resolve report')
+      const message = err instanceof Error ? err.message : 'Failed to resolve report'
+      alert(message)
     } finally {
       setLoading(false)
     }
