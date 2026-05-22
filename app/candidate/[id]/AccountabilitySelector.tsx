@@ -99,32 +99,35 @@ export default function AccountabilitySelector({
           <AddPeriodAction candidateId={candidateId} />
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-          {periods.map((p) => (
-            <Link
-              key={p.id}
-              href={`/candidate/${candidateId}/${p.id}`}
-              className={`btn btn-sm ${p.id === selectedPeriodId ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ textDecoration: 'none' }}
-            >
-              {p.yearEnd} • {POSITION_LABELS[p.position] || p.position}
-            </Link>
-          ))}
+          {periods.map((p) => {
+            const hasData = p.totalRaised != null || p.totalPacMoney != null || p.corporatePacMoney != null || p.peakNetAssets != null || p.peakStockValue != null || p.stockTradingVolume != null || p.earmarkedMoney != null || p.aipacMoney != null || p.party != null || p.region != null || p.donationSizeBreakdown != null || p.donationLocationBreakdown != null || p.pacTypeBreakdown != null || (p.topPacDonors != null && p.topPacDonors.length > 0)
+            return (
+              <Link
+                key={p.id}
+                href={`/candidate/${candidateId}/${p.id}`}
+                className={`btn btn-sm ${p.id === selectedPeriodId ? 'btn-primary' : (hasData ? 'btn-secondary' : 'btn-muted')}`}
+                style={{ textDecoration: 'none' }}
+              >
+                {p.yearEnd} • {POSITION_LABELS[p.position] || p.position}
+              </Link>
+            )
+          })}
         </div>
       </div>
 
       {/* Financial Summary */}
       <div className="stats-grid" style={{ marginBottom: '1.5rem' }}>
         <div className="card stat-card">
-          <div className="stat-value">{formatCurrency(selected.totalRaised || 0)}</div>
+          <div className="stat-value">{formatCurrency(selected.totalRaised)}</div>
           <div className="stat-label">Total Raised</div>
         </div>
         <div className="card stat-card">
-          <div className="stat-value">{formatCurrency(selected.totalPacMoney || 0)}</div>
+          <div className="stat-value">{formatCurrency(selected.totalPacMoney)}</div>
           <div className="stat-label">Total PAC Money</div>
         </div>
         <div className="card stat-card">
           <div className={`stat-value ${selected.corporatePacMoney === 0 ? 'green' : ''}`}>
-            {formatCurrency(selected.corporatePacMoney || 0)}
+            {formatCurrency(selected.corporatePacMoney)}
           </div>
           <div className="stat-label">
             Corporate PAC Money
@@ -137,12 +140,12 @@ export default function AccountabilitySelector({
         </div>
         <div className="card stat-card">
           <div className={`stat-value ${selected.peakStockValue === 0 ? 'green' : ''}`}>
-            {formatCurrency(selected.peakStockValue || 0)}
+            {formatCurrency(selected.peakStockValue)}
           </div>
           <div className="stat-label">Peak Stock Value</div>
         </div>
         <div className="card stat-card">
-          <div className="stat-value">{formatCurrency(selected.peakNetAssets || 0)}</div>
+          <div className="stat-value">{formatCurrency(selected.peakNetAssets)}</div>
           <div className="stat-label">Peak Net Assets</div>
         </div>
       </div>
@@ -168,9 +171,9 @@ export default function AccountabilitySelector({
         <div className="card" style={{ padding: '1rem', borderLeft: `4px solid ${selected.corporatePacMoney === 0 ? 'var(--success)' : (selected.corporatePacMoney === undefined ? 'var(--text-secondary)' : 'var(--danger)')}` }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Corporate PAC Index</div>
           <div style={{ fontWeight: 700, marginTop: '0.25rem', fontSize: '1.25rem', color: selected.corporatePacMoney === 0 ? 'var(--success)' : (selected.corporatePacMoney === undefined ? 'var(--text-secondary)' : 'var(--danger)') }}>
-            {selected.totalRaised && selected.totalRaised > 0 
-              ? `${((selected.corporatePacMoney || 0) / selected.totalRaised * 100).toFixed(1)}%` 
-              : '0.0%'}
+            {selected.totalRaised != null && selected.totalRaised > 0 && selected.corporatePacMoney != null
+              ? `${(selected.corporatePacMoney / selected.totalRaised * 100).toFixed(1)}%` 
+              : 'Unknown'}
           </div>
           <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)', marginTop: '0.125rem' }}>Share of total raised</div>
         </div>
@@ -179,7 +182,7 @@ export default function AccountabilitySelector({
           <div className="card" style={{ padding: '1rem', borderLeft: `4px solid ${selected.stockTradingVolume === 0 ? 'var(--success)' : 'var(--warning)'}` }}>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Stock Volume</div>
             <div style={{ fontWeight: 700, marginTop: '0.25rem', fontSize: '1.25rem', color: selected.stockTradingVolume === 0 ? 'var(--success)' : 'var(--text-primary)' }}>
-              {formatCurrency(selected.stockTradingVolume || 0)}
+              {formatCurrency(selected.stockTradingVolume)}
             </div>
             <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)', marginTop: '0.125rem' }}>Traded while in office</div>
           </div>
@@ -201,11 +204,11 @@ export default function AccountabilitySelector({
         )}
         <div className="card" style={{ padding: '1rem' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Earmarked Money</div>
-          <div style={{ fontWeight: 700, marginTop: '0.25rem' }}>{formatCurrency(selected.earmarkedMoney || 0)}</div>
+          <div style={{ fontWeight: 700, marginTop: '0.25rem' }}>{formatCurrency(selected.earmarkedMoney)}</div>
         </div>
         <div className="card" style={{ padding: '1rem' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>AIPAC Money</div>
-          <div style={{ fontWeight: 700, marginTop: '0.25rem' }}>{formatCurrency(selected.aipacMoney || 0)}</div>
+          <div style={{ fontWeight: 700, marginTop: '0.25rem' }}>{formatCurrency(selected.aipacMoney)}</div>
         </div>
       </div>
 

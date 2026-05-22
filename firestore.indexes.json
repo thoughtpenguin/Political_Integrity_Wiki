@@ -19,6 +19,27 @@
         { "fieldPath": "upvoteCount", "order": "DESCENDING" },
         { "fieldPath": "createdAt", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "proposals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "candidateId", "order": "ASCENDING" },
+        { "fieldPath": "fieldId", "order": "ASCENDING" },
+        { "fieldPath": "periodId", "order": "ASCENDING" },
+        { "fieldPath": "upvoteCount", "order": "DESCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "proposals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "candidateId", "order": "ASCENDING" },
+        { "fieldPath": "fieldId", "order": "ASCENDING" },
+        { "fieldPath": "periodId", "order": "ASCENDING" },
+        { "fieldPath": "pinned", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

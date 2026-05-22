@@ -1119,6 +1119,7 @@ def submit_badge_proposal(req: https_fn.CallableRequest) -> dict:
             message="At least one citation with a URL is required for badge proposals (e.g., a video clip of the pledge).",
         )
 
+    field_id = f"badge_{badge_id}"
     if _is_field_locked(candidate_id, field_id):
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
@@ -1142,7 +1143,7 @@ def submit_badge_proposal(req: https_fn.CallableRequest) -> dict:
     display_name = user_doc.to_dict().get("displayName", "Anonymous") if user_doc.exists else "Anonymous"
 
     # Badge proposals use the same proposals collection with fieldId = "badge_{badgeId}"
-    field_id = f"badge_{badge_id}"
+    # field_id already defined above
     proposal_ref = db.collection("proposals").document()
     proposal_ref.set({
         "candidateId": candidate_id,
