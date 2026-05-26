@@ -49,9 +49,9 @@ service cloud.firestore {
     match /proposals/{proposalId} {
       allow read: if true;
       allow create: if isAuthenticated() && isNotBanned();
-      allow update: if isAdmin() ||
-        (isOwner(resource.data.authorUid) &&
-         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deletionRequested']));
+      allow update: if isAdmin();
+      allow update: if isOwner(resource.data.authorUid) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deletionRequested']);
       allow delete: if isAdmin();
 
       // Votes — public read, authenticated write (own votes only)

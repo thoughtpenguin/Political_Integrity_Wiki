@@ -5,7 +5,7 @@ import { EDITABLE_FIELDS } from '@/lib/types'
 import type { Metadata } from 'next'
 import ProposalForm from './ProposalForm'
 import VoteButton from './VoteButton'
-import ReportProposalAction from './ReportProposalAction'
+import ProposalActions from './ProposalActions'
 
 export async function generateMetadata(
   props: { params: Promise<{ id: string; fieldId: string }> }
@@ -94,9 +94,6 @@ export default async function ProposalsPage(
                     {i === 0 && !proposal.pinned && (
                       <span style={{ color: 'var(--accent-secondary)', marginLeft: '0.5rem' }}>★ Top</span>
                     )}
-                    <span style={{ marginLeft: 'auto' }}>
-                      <ReportProposalAction proposalId={proposal.id} candidateId={id} />
-                    </span>
                   </div>
                   {proposal.citations.length > 0 && (
                     <div className="citation-list">
@@ -114,6 +111,7 @@ export default async function ProposalsPage(
                       ))}
                     </div>
                   )}
+                  <ProposalActions proposal={proposal} candidateId={id} fieldId={fieldId} />
                 </div>
               </div>
             ))}

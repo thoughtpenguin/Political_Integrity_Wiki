@@ -47,8 +47,8 @@ export default async function HomePage(props: { searchParams: Promise<{ level?: 
         </div>
         <h1>The Integrity Wiki</h1>
         <p style={{ position: 'relative', zIndex: 1 }}>
-          A crowdsourced campaign finance integrity index for every politician in America.
-          Track PAC money, stock trades, corruption pledges, and more — verified by the community.
+          A crowdsourced campaign finance integrity index covering every elected position in America, at every level.
+          Track PAC money, stock trades, integrity pledges, and more — verified by the community.
         </p>
         <div className="hero-search" style={{ position: 'relative', zIndex: 1 }}>
           <SearchBar />

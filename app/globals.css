@@ -678,21 +678,21 @@ h4 { font-size: 1.25rem; }
 }
 
 .leaderboard-rank.gold {
-  color: #white;
+  color: white;
   background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
   box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
   font-size: 0.8125rem;
 }
 
 .leaderboard-rank.silver {
-  color: #white;
+  color: white;
   background: linear-gradient(135deg, #cbd5e1 0%, #64748b 100%);
   box-shadow: 0 2px 8px rgba(100, 116, 139, 0.4);
   font-size: 0.8125rem;
 }
 
 .leaderboard-rank.bronze {
-  color: #white;
+  color: white;
   background: linear-gradient(135deg, #b45309 0%, #78350f 100%);
   box-shadow: 0 2px 8px rgba(180, 83, 9, 0.4);
   font-size: 0.8125rem;
@@ -1107,4 +1107,91 @@ h4 { font-size: 1.25rem; }
   h2 { font-size: 1.5rem; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .container { padding: 0 1rem; }
+}
+
+/* ─── Admin and User Proposal Actions ────────────────────────────────── */
+.proposal-actions-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  width: 100%;
+}
+
+.action-badge {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.action-badge.deletion-requested {
+  background: var(--warning-muted);
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.btn-admin {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all var(--transition-fast);
+}
+
+.btn-admin:hover:not(:disabled) {
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.btn-admin:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-admin.btn-admin-danger {
+  color: var(--danger);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.btn-admin.btn-admin-danger:hover:not(:disabled) {
+  background: var(--danger-muted);
+  border-color: var(--danger);
+}
+
+.btn-admin.btn-admin-success {
+  color: var(--success);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.btn-admin.btn-admin-success:hover:not(:disabled) {
+  background: var(--success-muted);
+  border-color: var(--success);
+}
+
+.modal-input-group {
+  margin-bottom: 1rem;
+}
+
+.modal-input-group label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  color: var(--text-secondary);
 }
