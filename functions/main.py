@@ -1005,21 +1005,29 @@ def daily_credibility_update(event: scheduler_fn.ScheduledEvent) -> None:
 
         # Award points to the poster
         poster_uid = top["authorUid"]
-        poster_x = CredibilityCalculator.calculate_daily_points(0, True)
-        db.collection("users").document(poster_uid).update({
-            "credibilityPoints": firestore.Increment(poster_x)
-        })
-        # Track points earned per proposal
-        db.collection("proposals").document(top["id"]).update({
-            f"accumulatedPoints.{poster_uid}": firestore.Increment(poster_x)
-        })
+        if poster_uid in user_data_map:
+            poster_x = CredibilityCalculator.calculate_daily_points(0, True)
+            db.collection("users").document(poster_uid).update({
+                "credibilityPoints": firestore.Increment(poster_x)
+            })
+            # Track points earned per proposal
+            db.collection("proposals").document(top["id"]).update({
+                f"accumulatedPoints.{poster_uid}": firestore.Increment(poster_x)
+            })
 
         # Award points to voters
         for vote in votes:
+            voter_uid = vote.id
+            if voter_uid == poster_uid:
+                continue  # Avoid double-rewarding the poster as a voter
+            
+            if voter_uid not in user_data_map:
+                continue  # Skip if user profile doc doesn't exist (prevents update crash)
+
             vote_data = vote.to_dict()
             if not CredibilityCalculator.can_earn_points(vote_data.get("votedAt", "")):
                 continue
-            voter_uid = vote.id
+            
             vote_count = vote_data.get("voteCountAtTime", 0)
             x = CredibilityCalculator.calculate_daily_points(vote_count, False)
             if x > 0:
