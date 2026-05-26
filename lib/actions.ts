@@ -52,6 +52,35 @@ function isUrlSafe(url: string): boolean {
   }
 }
 
+const DEFAULT_CONFIG = {
+  newUserPoints: 100,
+  createCandidateCost: 1000,
+  addPeriodManualCost: 1000,
+  submitProposalCost: 10,
+  submitBadgeProposalCost: 10,
+  pinProposalAuthorReward: 200,
+  pinProposalUpvoterReward: 150,
+  reportPeriodCost: 200,
+  reportPeriodApproveReward: 400,
+  reportProposalCost: 5,
+  reportProposalApproveReward: 15,
+  minUpvoterCombinedPoints: 500,
+  voteAgeDaysForDailyPoints: 3,
+  dailyPointsCap: 10,
+}
+
+async function getPointsConfigServer() {
+  try {
+    const doc = await adminDb.collection('system').doc('points_config').get()
+    if (doc.exists) {
+      return { ...DEFAULT_CONFIG, ...doc.data() }
+    }
+  } catch (err) {
+    console.error('Failed to load points config from Firestore, falling back to defaults:', err)
+  }
+  return DEFAULT_CONFIG
+}
+
 const VALID_STATUS_VALUES = ['running', 'in_office', 'out_of_office', 'unknown']
 
 // Note: In a real production app with JS disabled, we would verify the user via session cookies.
@@ -163,13 +192,16 @@ export async function submitProposalAction(formData: FormData) {
     }
 
     // 2. Load user and check credibility points
+    const pointsConfig = await getPointsConfigServer()
+    const cost = fieldId.startsWith('badge_') ? pointsConfig.submitBadgeProposalCost : pointsConfig.submitProposalCost
+
     const userRef = adminDb.collection('users').doc(uid)
     const userDoc = await userRef.get()
     if (!userDoc.exists) return { error: 'User not found' }
     const userData = userDoc.data()
     const points = userData?.credibilityPoints || 0
-    if (points < 10) {
-      return { error: `You need 10 credibility points to submit a proposal. You have ${points}.` }
+    if (points < cost) {
+      return { error: `You need ${cost} credibility points to submit a proposal. You have ${points}.` }
     }
 
     // 3. Schema and lock checks
@@ -264,7 +296,7 @@ export async function submitProposalAction(formData: FormData) {
     await adminDb.runTransaction(async (transaction) => {
       // Deduct points
       transaction.update(userRef, {
-        credibilityPoints: FieldValue.increment(-10)
+        credibilityPoints: FieldValue.increment(-cost)
       })
       // Add proposal
       transaction.set(proposalRef, {
@@ -304,13 +336,16 @@ export async function createCandidateAction(formData: FormData) {
       return { error: 'Your account has been suspended.' }
     }
 
+    const pointsConfig = await getPointsConfigServer()
+    const cost = pointsConfig.createCandidateCost
+
     const userRef = adminDb.collection('users').doc(uid)
     const userDoc = await userRef.get()
     const userData = userDoc.data()
     const points = userData?.credibilityPoints || 0
     
-    if (points < 1000) {
-      return { error: `1,000 credibility points required to create a candidate profile by name. You have ${points}.` }
+    if (points < cost) {
+      return { error: `${cost.toLocaleString()} credibility points required to create a candidate profile by name. You have ${points}.` }
     }
 
     const candidateRef = adminDb.collection('candidates').doc()
@@ -318,7 +353,7 @@ export async function createCandidateAction(formData: FormData) {
     // 2. Deduct points and create candidate profile atomically in a transaction
     await adminDb.runTransaction(async (transaction) => {
       transaction.update(userRef, {
-        credibilityPoints: FieldValue.increment(-1000)
+        credibilityPoints: FieldValue.increment(-cost)
       })
       transaction.set(candidateRef, {
         name,

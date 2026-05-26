@@ -5,6 +5,7 @@ import { useAuth } from '@/app/components/AuthProvider'
 import { submitProposalAction } from '@/lib/actions'
 import { usePathname } from 'next/navigation'
 import { EDITABLE_FIELDS } from '@/lib/types'
+import { usePointsConfig } from '@/app/components/PointsConfigProvider'
 
 const STATUS_OPTIONS = [
   { value: 'running', label: 'Running for Office' },
@@ -41,6 +42,7 @@ export default function ProposalForm({
   fieldName: string
 }) {
   const { user } = useAuth()
+  const config = usePointsConfig()
   const pathname = usePathname()
   const [showForm, setShowForm] = useState(false)
   const [newValue, setNewValue] = useState('')
@@ -54,6 +56,7 @@ export default function ProposalForm({
   const isPhoto = field?.type === 'photo'
   const isStatus = fieldId === 'status'
   const citationOptional = field?.citationOptional
+  const cost = fieldId.startsWith('badge_') ? config.submitBadgeProposalCost : config.submitProposalCost
 
   if (!user) {
     return (
@@ -68,7 +71,7 @@ export default function ProposalForm({
   if (!showForm) {
     return (
       <button className="btn btn-primary" onClick={() => setShowForm(true)}>
-        + Submit a Proposal (costs 10 pts)
+        + Submit a Proposal (costs {cost} pts)
       </button>
     )
   }

@@ -515,30 +515,21 @@ class CredibilityCalculator:
     """
     Calculates daily credibility point awards for users based on their
     proposal activity and upvoting behavior.
-
-    The formula: X = round(max(0, 5 - (k/10) + p))
-    where:
-      k = number of votes the proposal had when you upvoted it
-      p = 5 if you're the original poster, else 0
     """
 
     @staticmethod
     def calculate_daily_points(vote_count_at_time_of_vote: int, is_original_poster: bool) -> int:
         """
         Calculate the daily credibility points a user earns for being
-        associated with the current top proposal.
+        associated with the current top proposal. Delegates to points_config.py.
         """
-        p = 5 if is_original_poster else 0
-        k = vote_count_at_time_of_vote
-        x = round(max(0, 5 - (k / 10) + p))
-        return min(x, 10)  # Cap at 10 to prevent abuse
+        from points_config import calculate_daily_points as calc_pts
+        return calc_pts(vote_count_at_time_of_vote, is_original_poster)
 
     @staticmethod
     def can_earn_points(vote_timestamp_iso: str) -> bool:
         """
-        Check if 3 days have passed since the vote was cast,
-        which is required before points start accruing.
+        Check if enough days have passed since the vote was cast. Delegates to points_config.py.
         """
-        from datetime import datetime, timezone, timedelta
-        vote_time = datetime.fromisoformat(vote_timestamp_iso)
-        return datetime.now(timezone.utc) >= vote_time + timedelta(days=3)
+        from points_config import can_earn_points as can_earn
+        return can_earn(vote_timestamp_iso)

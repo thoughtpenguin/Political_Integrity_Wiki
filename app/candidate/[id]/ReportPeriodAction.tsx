@@ -4,13 +4,15 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { httpsCallable } from 'firebase/functions'
 import { functions } from '@/lib/firebase-client'
+import { usePointsConfig } from '@/app/components/PointsConfigProvider'
 
 export default function ReportPeriodAction({ candidateId, periodId }: { candidateId: string; periodId: string }) {
   const router = useRouter()
+  const config = usePointsConfig()
   const [loading, setLoading] = useState(false)
 
   const handleReport = async () => {
-    if (!confirm("Are you sure you want to report this period as nonexistent? It costs 200 points. The period will be hidden pending admin review.")) return
+    if (!confirm(`Are you sure you want to report this period as nonexistent? It costs ${config.reportPeriodCost} points. The period will be hidden pending admin review.`)) return
 
     setLoading(true)
     try {
@@ -37,7 +39,7 @@ export default function ReportPeriodAction({ candidateId, periodId }: { candidat
       className="btn btn-sm" 
       style={{ background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)', fontSize: '0.75rem', marginTop: '1rem' }}
     >
-      {loading ? 'Reporting...' : 'Flag as Nonexistent (200 pts)'}
+      {loading ? 'Reporting...' : `Flag as Nonexistent (${config.reportPeriodCost} pts)`}
     </button>
   )
 }

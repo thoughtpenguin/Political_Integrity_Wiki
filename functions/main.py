@@ -17,6 +17,19 @@ from firebase_admin import initialize_app, firestore, auth
 from google.cloud.firestore_v1 import FieldFilter
 
 from fec_client import FECClient, CandidateIngester, CredibilityCalculator
+from points_config import (
+    CREATE_CANDIDATE_COST,
+    ADD_PERIOD_MANUAL_COST,
+    SUBMIT_PROPOSAL_COST,
+    SUBMIT_BADGE_PROPOSAL_COST,
+    PIN_PROPOSAL_AUTHOR_REWARD,
+    PIN_PROPOSAL_UPVOTER_REWARD,
+    REPORT_PERIOD_COST,
+    REPORT_PERIOD_APPROVE_REWARD,
+    REPORT_PROPOSAL_COST,
+    REPORT_PROPOSAL_APPROVE_REWARD,
+    MIN_UPVOTER_COMBINED_POINTS,
+)
 
 set_global_options(max_instances=10)
 app = initialize_app()
@@ -284,10 +297,10 @@ def create_candidate(req: https_fn.CallableRequest) -> dict:
         )
 
     points = _get_user_points(uid)
-    if points < 1000:
+    if points < CREATE_CANDIDATE_COST:
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
-            message=f"You need 1000 credibility points to create a candidate by name. You have {points}.",
+            message=f"You need {CREATE_CANDIDATE_COST} credibility points to create a candidate by name. You have {points}.",
         )
 
     # Check if a candidate with the same normalized name already exists → return it
@@ -301,7 +314,7 @@ def create_candidate(req: https_fn.CallableRequest) -> dict:
 
     # Deduct points
     db.collection("users").document(uid).update({
-        "credibilityPoints": firestore.Increment(-1000)
+        "credibilityPoints": firestore.Increment(-CREATE_CANDIDATE_COST)
     })
 
     candidate_ref = db.collection("candidates").document()
@@ -368,12 +381,12 @@ def add_accountability_period(req: https_fn.CallableRequest) -> dict:
             )
 
         points = _get_user_points(uid)
-        if points < 1000:
+        if points < ADD_PERIOD_MANUAL_COST:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
-                message=f"You need 1000 credibility points for manual entry. You have {points}.",
+                message=f"You need {ADD_PERIOD_MANUAL_COST} credibility points for manual entry. You have {points}.",
             )
-        points_to_deduct = 1000
+        points_to_deduct = ADD_PERIOD_MANUAL_COST
         
         new_periods = [{
             "id": str(uuid.uuid4()),
@@ -549,15 +562,15 @@ def submit_proposal(req: https_fn.CallableRequest) -> dict:
         )
 
     points = _get_user_points(uid)
-    if points < 10:
+    if points < SUBMIT_PROPOSAL_COST:
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
-            message=f"You need 10 credibility points. You have {points}.",
+            message=f"You need {SUBMIT_PROPOSAL_COST} credibility points. You have {points}.",
         )
 
     # Deduct points
     db.collection("users").document(uid).update({
-        "credibilityPoints": firestore.Increment(-10)
+        "credibilityPoints": firestore.Increment(-SUBMIT_PROPOSAL_COST)
     })
 
     # Get author display name
@@ -686,22 +699,22 @@ def admin_pin_proposal(req: https_fn.CallableRequest) -> dict:
     # Pin the proposal
     proposal_ref.update({"pinned": True, "pinnedAt": now})
 
-    # Award 200 points to the poster (minus already earned)
+    # Award points to the poster (minus already earned)
     author_uid = proposal_data["authorUid"]
     poster_earned = proposal_data.get("accumulatedPoints", {}).get(author_uid, 0)
-    poster_bonus = max(0, 200 - poster_earned)
+    poster_bonus = max(0, PIN_PROPOSAL_AUTHOR_REWARD - poster_earned)
     
     db.collection("users").document(author_uid).update({
         "credibilityPoints": firestore.Increment(poster_bonus)
     })
 
-    # Award 150 points to upvoters (minus already earned)
+    # Award points to upvoters (minus already earned)
     votes = proposal_ref.collection("votes").get()
     for vote in votes:
         voter_uid = vote.id
         if voter_uid != author_uid:
             voter_earned = proposal_data.get("accumulatedPoints", {}).get(voter_uid, 0)
-            voter_bonus = max(0, 150 - voter_earned)
+            voter_bonus = max(0, PIN_PROPOSAL_UPVOTER_REWARD - voter_earned)
             db.collection("users").document(voter_uid).update({
                 "credibilityPoints": firestore.Increment(voter_bonus)
             })
@@ -987,7 +1000,7 @@ def daily_credibility_update(event: scheduler_fn.ScheduledEvent) -> None:
             voter_uid = vote.id
             combined_points += user_data_map.get(voter_uid, {}).get("points", 0)
 
-        if combined_points < 500:
+        if combined_points < MIN_UPVOTER_COMBINED_POINTS:
             continue
 
         # Award points to the poster
@@ -1127,15 +1140,15 @@ def submit_badge_proposal(req: https_fn.CallableRequest) -> dict:
         )
 
     points = _get_user_points(uid)
-    if points < 10:
+    if points < SUBMIT_BADGE_PROPOSAL_COST:
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
-            message=f"You need 10 credibility points. You have {points}.",
+            message=f"You need {SUBMIT_BADGE_PROPOSAL_COST} credibility points. You have {points}.",
         )
 
     # Deduct points
     db.collection("users").document(uid).update({
-        "credibilityPoints": firestore.Increment(-10)
+        "credibilityPoints": firestore.Increment(-SUBMIT_BADGE_PROPOSAL_COST)
     })
 
     # Get author display name
@@ -1213,14 +1226,14 @@ def report_accountability_period(req: https_fn.CallableRequest) -> dict:
         )
 
     points = _get_user_points(uid)
-    if points < 200:
+    if points < REPORT_PERIOD_COST:
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
-            message=f"You need 200 credibility points to report a period. You have {points}.",
+            message=f"You need {REPORT_PERIOD_COST} credibility points to report a period. You have {points}.",
         )
 
     db.collection("users").document(uid).update({
-        "credibilityPoints": firestore.Increment(-200)
+        "credibilityPoints": firestore.Increment(-REPORT_PERIOD_COST)
     })
 
     # Hide the period
@@ -1278,14 +1291,14 @@ def report_proposal(req: https_fn.CallableRequest) -> dict:
         )
 
     points = _get_user_points(uid)
-    if points < 5:
+    if points < REPORT_PROPOSAL_COST:
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
-            message=f"You need 5 credibility points to report a proposal. You have {points}.",
+            message=f"You need {REPORT_PROPOSAL_COST} credibility points to report a proposal. You have {points}.",
         )
 
     db.collection("users").document(uid).update({
-        "credibilityPoints": firestore.Increment(-5)
+        "credibilityPoints": firestore.Increment(-REPORT_PROPOSAL_COST)
     })
 
     # Create report
@@ -1333,9 +1346,9 @@ def admin_resolve_period_report(req: https_fn.CallableRequest) -> dict:
             # Delete period
             periods = [p for p in periods if p.get("id") != period_id]
             candidate_ref.update({"accountabilityPeriods": periods})
-            # Refund & reward reporter: 400 points
+            # Refund & reward reporter
             db.collection("users").document(reporter_uid).update({
-                "credibilityPoints": firestore.Increment(400)
+                "credibilityPoints": firestore.Increment(REPORT_PERIOD_APPROVE_REWARD)
             })
         elif decision == "reject":
             # Put period back up, hide report button
@@ -1414,9 +1427,9 @@ def admin_resolve_proposal_report(req: https_fn.CallableRequest) -> dict:
                         "bannedBy": admin_uid
                     })
                 
-        # Refund reporter 15 points
+        # Refund reporter
         db.collection("users").document(reporter_uid).update({
-            "credibilityPoints": firestore.Increment(15)
+            "credibilityPoints": firestore.Increment(REPORT_PROPOSAL_APPROVE_REWARD)
         })
         
         
@@ -1499,3 +1512,48 @@ def admin_get_reports(req: https_fn.CallableRequest) -> dict:
         results.append(item)
 
     return {"reports": results}
+
+
+@https_fn.on_call(timeout_sec=60)
+def get_points_config(req: https_fn.CallableRequest) -> dict:
+    """Get the centralized points configuration and cache it to Firestore."""
+    from points_config import (
+        NEW_USER_POINTS,
+        CREATE_CANDIDATE_COST,
+        ADD_PERIOD_MANUAL_COST,
+        SUBMIT_PROPOSAL_COST,
+        SUBMIT_BADGE_PROPOSAL_COST,
+        PIN_PROPOSAL_AUTHOR_REWARD,
+        PIN_PROPOSAL_UPVOTER_REWARD,
+        REPORT_PERIOD_COST,
+        REPORT_PERIOD_APPROVE_REWARD,
+        REPORT_PROPOSAL_COST,
+        REPORT_PROPOSAL_APPROVE_REWARD,
+        MIN_UPVOTER_COMBINED_POINTS,
+        VOTE_AGE_DAYS_FOR_DAILY_POINTS,
+        DAILY_POINTS_CAP,
+    )
+    
+    config = {
+        "newUserPoints": NEW_USER_POINTS,
+        "createCandidateCost": CREATE_CANDIDATE_COST,
+        "addPeriodManualCost": ADD_PERIOD_MANUAL_COST,
+        "submitProposalCost": SUBMIT_PROPOSAL_COST,
+        "submitBadgeProposalCost": SUBMIT_BADGE_PROPOSAL_COST,
+        "pinProposalAuthorReward": PIN_PROPOSAL_AUTHOR_REWARD,
+        "pinProposalUpvoterReward": PIN_PROPOSAL_UPVOTER_REWARD,
+        "reportPeriodCost": REPORT_PERIOD_COST,
+        "reportPeriodApproveReward": REPORT_PERIOD_APPROVE_REWARD,
+        "reportProposalCost": REPORT_PROPOSAL_COST,
+        "reportProposalApproveReward": REPORT_PROPOSAL_APPROVE_REWARD,
+        "minUpvoterCombinedPoints": MIN_UPVOTER_COMBINED_POINTS,
+        "voteAgeDaysForDailyPoints": VOTE_AGE_DAYS_FOR_DAILY_POINTS,
+        "dailyPointsCap": DAILY_POINTS_CAP,
+    }
+    
+    try:
+        db.collection("system").document("points_config").set(config)
+    except Exception as e:
+        print(f"Warning: Failed to cache points config to Firestore: {e}")
+        
+    return config

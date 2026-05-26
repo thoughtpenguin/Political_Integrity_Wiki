@@ -6,9 +6,11 @@ import { useAuth } from '@/app/components/AuthProvider'
 import { functions } from '@/lib/firebase-client'
 import { httpsCallable } from 'firebase/functions'
 import IngestingModal from '@/app/components/IngestingModal'
+import { usePointsConfig } from '@/app/components/PointsConfigProvider'
 
 export default function CreateCandidateForm() {
   const { user } = useAuth()
+  const config = usePointsConfig()
   const router = useRouter()
   const [mode, setMode] = useState<'fec' | 'name'>('fec')
   const [loading, setLoading] = useState(false)
@@ -51,6 +53,11 @@ export default function CreateCandidateForm() {
 
   return (
     <div>
+      <p className="text-secondary" style={{ marginBottom: '2rem' }}>
+        Add a new candidate to the wiki. For federal candidates, enter their FEC ID to automatically
+        import their financial data. State and local candidates require {config.createCandidateCost.toLocaleString()} credibility points.
+      </p>
+
       {/* Mode selector */}
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
         <button 
@@ -65,7 +72,7 @@ export default function CreateCandidateForm() {
           className={`btn ${mode === 'name' ? 'btn-primary' : 'btn-secondary'}`} 
           onClick={() => setMode('name')}
         >
-          By Name (1,000 pts)
+          By Name ({config.createCandidateCost.toLocaleString()} pts)
         </button>
       </div>
 
@@ -113,7 +120,7 @@ export default function CreateCandidateForm() {
                 required
               />
               <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '0.375rem' }}>
-                Creating a candidate by name costs 1,000 credibility points.
+                Creating a candidate by name costs {config.createCandidateCost.toLocaleString()} credibility points.
               </p>
             </div>
             <button type="submit" className="btn btn-primary btn-lg" disabled={loading}>

@@ -9,7 +9,8 @@ import {
   type User as FirebaseUser,
 } from 'firebase/auth'
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore'
-import { auth, db } from '@/lib/firebase-client'
+import { auth, db, functions } from '@/lib/firebase-client'
+import { httpsCallable } from 'firebase/functions'
 
 interface AuthUser {
   uid: string
@@ -56,11 +57,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const isNew = !userDoc.exists()
 
         if (isNew) {
+          let startPoints = 100
+          try {
+            const getPointsConfigFn = httpsCallable<undefined, { newUserPoints: number }>(functions, 'get_points_config')
+            const configResult = await getPointsConfigFn()
+            if (configResult.data && typeof configResult.data.newUserPoints === 'number') {
+              startPoints = configResult.data.newUserPoints
+            }
+          } catch (err) {
+            console.error('Failed to fetch new user points configuration, falling back to 100:', err)
+          }
+
           const newUser = {
             displayName: firebaseUser.displayName || 'Anonymous',
             photoURL: firebaseUser.photoURL || '',
             email: firebaseUser.email || '',
-            credibilityPoints: 100,
+            credibilityPoints: startPoints,
             isAdmin: false,
             isBanned: false,
             createdAt: new Date().toISOString(),

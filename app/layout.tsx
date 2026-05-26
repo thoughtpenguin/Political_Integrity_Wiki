@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { AuthProvider } from './components/AuthProvider'
+import { PointsConfigProvider } from './components/PointsConfigProvider'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import { BASE_URL } from '@/lib/constants'
@@ -46,11 +47,13 @@ export default function RootLayout({
     <html lang="en" className="antialiased">
       <body>
         <AuthProvider>
-          <div className="page-wrapper">
-            <Header />
-            <main className="main-content">{children}</main>
-            <Footer />
-          </div>
+          <PointsConfigProvider>
+            <div className="page-wrapper">
+              <Header />
+              <main className="main-content">{children}</main>
+              <Footer />
+            </div>
+          </PointsConfigProvider>
         </AuthProvider>
       </body>
     </html>

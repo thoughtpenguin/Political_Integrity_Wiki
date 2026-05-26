@@ -197,7 +197,17 @@ export async function getTopProposalValue(
       combinedPoints += userCredibilityCache.get(id) || 0
     }
 
-    return combinedPoints >= 500 ? top.value : ''
+    let minPoints = 500
+    try {
+      const configDoc = await adminDb.collection('system').doc('points_config').get()
+      if (configDoc.exists) {
+        minPoints = configDoc.data()?.minUpvoterCombinedPoints ?? 500
+      }
+    } catch (configErr) {
+      console.error('Failed to load points config in getTopProposalValue, using default 500:', configErr)
+    }
+
+    return combinedPoints >= minPoints ? top.value : ''
   } catch (error) {
     console.error(`Error in getTopProposalValue for candidate ${candidateId}, field ${fieldId}:`, error)
     return ''
