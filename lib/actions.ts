@@ -66,7 +66,7 @@ const DEFAULT_CONFIG = {
   reportProposalApproveReward: 15,
   minUpvoterCombinedPoints: 500,
   voteAgeDaysForDailyPoints: 3,
-  dailyPointsCap: 10,
+  dailyPointsCap: 50,
 }
 
 async function getPointsConfigServer() {

@@ -20,8 +20,9 @@ export type CandidateWithPeriodData = Candidate & {
  * Used by Server Components to fetch data directly from Firestore.
  */
 
-// Local cache for user credibility points to avoid duplicate reads during a request/server session.
+// Local cache for user credibility points and profiles to avoid duplicate reads during a request/server session.
 const userCredibilityCache = new Map<string, number>()
+const userProfileCache = new Map<string, { createdAt: string; credibilityPoints: number }>()
 
 export async function getCandidate(id: string): Promise<Candidate | null> {
   try {
@@ -141,12 +142,74 @@ export async function getProposals(
     query = query.where('periodId', '==', periodId)
   }
 
-  const snapshot = await query.orderBy('upvoteCount', 'desc').orderBy('createdAt', 'asc').get()
-
-  return snapshot.docs.map((doc) => ({
+  // Fetch proposals ordered by upvoteCount descending
+  const snapshot = await query.orderBy('upvoteCount', 'desc').get()
+  const proposals = snapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
   })) as Proposal[]
+
+  if (proposals.length <= 1) {
+    return proposals
+  }
+
+  // To implement the tiebreaker rule: "Account age will be the tiebreaker, then credibility points."
+  // we fetch the author's registration date (createdAt) and credibilityPoints.
+  const authorIds = Array.from(new Set(proposals.map((p) => p.authorUid)))
+  const uncachedAuthorIds = authorIds.filter((id) => !userProfileCache.has(id))
+
+  if (uncachedAuthorIds.length > 0) {
+    try {
+      const userRefs = uncachedAuthorIds.map((id) => adminDb.collection('users').doc(id))
+      const userDocs = await adminDb.getAll(...userRefs)
+      for (const doc of userDocs) {
+        if (doc.exists) {
+          const data = doc.data()
+          userProfileCache.set(doc.id, {
+            createdAt: data?.createdAt || '2099-01-01',
+            credibilityPoints: data?.credibilityPoints || 0,
+          })
+        } else {
+          userProfileCache.set(doc.id, {
+            createdAt: '2099-01-01',
+            credibilityPoints: 0,
+          })
+        }
+      }
+      // Set default for any missing documents in database to avoid re-fetching
+      for (const id of uncachedAuthorIds) {
+        if (!userProfileCache.has(id)) {
+          userProfileCache.set(id, {
+            createdAt: '2099-01-01',
+            credibilityPoints: 0,
+          })
+        }
+      }
+    } catch (err) {
+      console.error('Failed to pre-fetch proposal authors for sorting:', err)
+    }
+  }
+
+  // Sort proposals according to the tiebreaker rules:
+  // 1. Upvote count descending
+  // 2. Author account age ascending (older first)
+  // 3. Author credibility points descending
+  proposals.sort((a, b) => {
+    const votesDiff = (b.upvoteCount || 0) - (a.upvoteCount || 0)
+    if (votesDiff !== 0) return votesDiff
+
+    const authorA = userProfileCache.get(a.authorUid) || { createdAt: '2099-01-01', credibilityPoints: 0 }
+    const authorB = userProfileCache.get(b.authorUid) || { createdAt: '2099-01-01', credibilityPoints: 0 }
+
+    const dateA = new Date(authorA.createdAt).getTime()
+    const dateB = new Date(authorB.createdAt).getTime()
+    const ageDiff = dateA - dateB
+    if (ageDiff !== 0) return ageDiff
+
+    return authorB.credibilityPoints - authorA.credibilityPoints
+  })
+
+  return proposals
 }
 
 export async function getTopProposalValue(
