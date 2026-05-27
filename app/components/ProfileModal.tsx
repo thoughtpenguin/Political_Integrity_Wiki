@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from './AuthProvider'
 import { db, auth } from '@/lib/firebase-client'
@@ -25,6 +26,7 @@ export default function ProfileModal({ isOpen, onClose, isInitialSetup = false }
   })
   const router = useRouter()
   const [isSaving, setIsSaving] = useState(false)
+  const [agreedToTOS, setAgreedToTOS] = useState(false)
 
   if (!isOpen || !user) return null
 
@@ -34,15 +36,24 @@ export default function ProfileModal({ isOpen, onClose, isInitialSetup = false }
       alert('Display name is required.')
       return
     }
+    if (isInitialSetup && !agreedToTOS) {
+      alert('You must agree to the Terms of Service to continue.')
+      return
+    }
 
     setIsSaving(true)
     try {
       const userRef = doc(db, 'users', user.uid)
-      await updateDoc(userRef, { 
+      const updateData: any = {
         displayName,
         photoURL: photoOption === 'google' ? googlePhotoURL : '',
-        hasCompletedSetup: true 
-      })
+        hasCompletedSetup: true
+      }
+      if (isInitialSetup) {
+        updateData.agreedToTOS = true
+        updateData.agreedToTOSAt = new Date().toISOString()
+      }
+      await updateDoc(userRef, updateData)
       router.refresh()
       onClose()
     } catch (error) {
@@ -164,13 +175,39 @@ export default function ProfileModal({ isOpen, onClose, isInitialSetup = false }
             />
           </div>
 
+          {isInitialSetup && (
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+              <input
+                id="tos-checkbox"
+                type="checkbox"
+                checked={agreedToTOS}
+                onChange={(e) => setAgreedToTOS(e.target.checked)}
+                style={{
+                  marginTop: '0.25rem',
+                  cursor: 'pointer',
+                  width: '16px',
+                  height: '16px',
+                  accentColor: 'var(--accent-primary)',
+                }}
+                required
+              />
+              <label htmlFor="tos-checkbox" style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', cursor: 'pointer', lineHeight: 1.4, userSelect: 'none' }}>
+                I have read and agree to the{' '}
+                <Link href="/terms-of-service" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-secondary)', textDecoration: 'underline' }}>
+                  Terms of Service
+                </Link>
+                .
+              </label>
+            </div>
+          )}
+
           <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
             {!isInitialSetup && (
               <button type="button" className="btn btn-secondary" onClick={onClose} style={{ flex: 1 }}>
                 Cancel
               </button>
             )}
-            <button type="submit" className="btn btn-primary" disabled={isSaving} style={{ flex: 1 }}>
+            <button type="submit" className="btn btn-primary" disabled={isSaving || (isInitialSetup && !agreedToTOS)} style={{ flex: 1 }}>
               {isSaving ? 'Saving...' : (isInitialSetup ? 'Get Started' : 'Save Changes')}
             </button>
           </div>
@@ -178,7 +215,7 @@ export default function ProfileModal({ isOpen, onClose, isInitialSetup = false }
 
         {isInitialSetup && (
           <div className="modal-footer text-muted">
-            By continuing, you agree to our community guidelines.
+            By continuing, you agree to our community guidelines and Terms of Service.
           </div>
         )}
       </div>

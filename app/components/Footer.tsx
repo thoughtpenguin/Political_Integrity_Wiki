@@ -6,8 +6,7 @@ export default function Footer() {
       <div className="container footer-inner">
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-            © {new Date().getFullYear()} The Integrity Wiki — Open-source political transparency
-          </div>
+            © {new Date().getFullYear()} The Integrity Wiki</div>
           <a
             href="https://github.com/KaiSereni/political_integrity_wiki"
             target="_blank"
@@ -22,6 +21,7 @@ export default function Footer() {
         </div>
         <ul className="footer-links">
           <li><Link href="/how-it-works">How It Works</Link></li>
+          <li><Link href="/terms-of-service">Terms of Service</Link></li>
           <li><Link href="/leaderboard">Leaderboard</Link></li>
           <li><Link href="/audit-log">Audit Log</Link></li>
           <li><Link href="/robots.txt">robots.txt</Link></li>
