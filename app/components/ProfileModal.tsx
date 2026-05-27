@@ -44,7 +44,13 @@ export default function ProfileModal({ isOpen, onClose, isInitialSetup = false }
     setIsSaving(true)
     try {
       const userRef = doc(db, 'users', user.uid)
-      const updateData: any = {
+      const updateData: {
+        displayName: string
+        photoURL: string
+        hasCompletedSetup: boolean
+        agreedToTOS?: boolean
+        agreedToTOSAt?: string
+      } = {
         displayName,
         photoURL: photoOption === 'google' ? googlePhotoURL : '',
         hasCompletedSetup: true

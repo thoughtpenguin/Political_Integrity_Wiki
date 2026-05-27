@@ -16,7 +16,7 @@ interface ProposalActionsProps {
 
 type ModalType = 'none' | 'ban' | 'points' | 'pin' | 'unpin' | 'delete' | 'request_deletion'
 
-export default function ProposalActions({ proposal, candidateId, fieldId }: ProposalActionsProps) {
+export default function ProposalActions({ proposal, candidateId }: ProposalActionsProps) {
   const { user } = useAuth()
   const router = useRouter()
   const config = usePointsConfig()

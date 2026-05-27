@@ -16,6 +16,15 @@
       "fields": [
         { "fieldPath": "candidateId", "order": "ASCENDING" },
         { "fieldPath": "fieldId", "order": "ASCENDING" },
+        { "fieldPath": "upvoteCount", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "proposals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "candidateId", "order": "ASCENDING" },
+        { "fieldPath": "fieldId", "order": "ASCENDING" },
         { "fieldPath": "upvoteCount", "order": "DESCENDING" },
         { "fieldPath": "createdAt", "order": "ASCENDING" }
       ]
