@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   description: 'Public audit log of all admin actions on The Integrity Wiki for full transparency.',
 }
 
+export const dynamic = 'force-dynamic'
+
 const ACTION_LABELS: Record<string, { label: string; color: string }> = {
   pin_proposal: { label: 'Pinned Proposal', color: 'var(--success)' },
   unpin_proposal: { label: 'Unpinned Proposal', color: 'var(--warning)' },

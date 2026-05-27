@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useAuth } from './AuthProvider'
-import { db } from '@/lib/firebase-client'
+import { db, auth } from '@/lib/firebase-client'
 import { doc, updateDoc } from 'firebase/firestore'
 
 interface ProfileModalProps {
@@ -15,6 +16,14 @@ interface ProfileModalProps {
 export default function ProfileModal({ isOpen, onClose, isInitialSetup = false }: ProfileModalProps) {
   const { user } = useAuth()
   const [displayName, setDisplayName] = useState(() => user?.displayName || '')
+  const googlePhotoURL = auth.currentUser?.photoURL || ''
+  const [photoOption, setPhotoOption] = useState<'google' | 'default'>(() => {
+    if (user?.photoURL && (user.photoURL === googlePhotoURL || !googlePhotoURL)) {
+      return 'google'
+    }
+    return 'default'
+  })
+  const router = useRouter()
   const [isSaving, setIsSaving] = useState(false)
 
   if (!isOpen || !user) return null
@@ -31,8 +40,10 @@ export default function ProfileModal({ isOpen, onClose, isInitialSetup = false }
       const userRef = doc(db, 'users', user.uid)
       await updateDoc(userRef, { 
         displayName,
+        photoURL: photoOption === 'google' ? googlePhotoURL : '',
         hasCompletedSetup: true 
       })
+      router.refresh()
       onClose()
     } catch (error) {
       console.error('Error saving profile:', error)
@@ -55,21 +66,89 @@ export default function ProfileModal({ isOpen, onClose, isInitialSetup = false }
         </p>
 
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: 'left' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-            <Image
-              src={user.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'}
-              alt={user.displayName || 'Profile Picture'}
-              width={80}
-              height={80}
-              style={{
-                borderRadius: '50%',
-                objectFit: 'cover',
-                border: '2px solid var(--border-color)',
-                backgroundColor: 'var(--bg-secondary)',
-              }}
-            />
-            <div className="text-muted" style={{ fontSize: '0.75rem' }}>
-              Profile picture is synced with your Google account.
+          <div>
+            <label className="label" style={{ marginBottom: '0.75rem' }}>Profile Picture</label>
+            <div style={{ display: 'grid', gridTemplateColumns: googlePhotoURL ? '1fr 1fr' : '1fr', gap: '1rem', marginBottom: '0.5rem' }}>
+              {/* Option 1: Google Photo */}
+              {googlePhotoURL && (
+                <button
+                  type="button"
+                  onClick={() => setPhotoOption('google')}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    padding: '1rem',
+                    background: photoOption === 'google' ? 'var(--bg-card-hover)' : 'var(--bg-secondary)',
+                    border: photoOption === 'google' ? '2px solid var(--accent-primary)' : '2px solid var(--border-color)',
+                    borderRadius: 'var(--radius-lg)',
+                    cursor: 'pointer',
+                    transition: 'all var(--transition-fast)',
+                    outline: 'none',
+                    boxShadow: photoOption === 'google' ? 'var(--shadow-glow)' : 'none',
+                  }}
+                >
+                  <Image
+                    src={googlePhotoURL}
+                    alt="Google Profile"
+                    width={56}
+                    height={56}
+                    style={{
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '2px solid rgba(255, 255, 255, 0.1)',
+                      backgroundColor: 'var(--bg-secondary)',
+                    }}
+                  />
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)' }}>Google Photo</div>
+                    <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginTop: '0.125rem' }}>Imported picture</div>
+                  </div>
+                </button>
+              )}
+              
+              {/* Option 2: Default Photo */}
+              <button
+                type="button"
+                onClick={() => setPhotoOption('default')}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '1rem',
+                  background: photoOption === 'default' ? 'var(--bg-card-hover)' : 'var(--bg-secondary)',
+                  border: photoOption === 'default' ? '2px solid var(--accent-primary)' : '2px solid var(--border-color)',
+                  borderRadius: 'var(--radius-lg)',
+                  cursor: 'pointer',
+                  transition: 'all var(--transition-fast)',
+                  outline: 'none',
+                  boxShadow: photoOption === 'default' ? 'var(--shadow-glow)' : 'none',
+                }}
+              >
+                <div
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, var(--accent-primary), #7c3aed)',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    fontSize: '1.25rem',
+                    border: '2px solid rgba(255, 255, 255, 0.1)',
+                  }}
+                >
+                  {(displayName.trim() || user.displayName || 'A').charAt(0).toUpperCase()}
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)' }}>Default Avatar</div>
+                  <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginTop: '0.125rem' }}>Dynamic initials</div>
+                </div>
+              </button>
             </div>
           </div>
 

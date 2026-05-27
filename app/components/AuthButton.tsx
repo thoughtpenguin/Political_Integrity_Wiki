@@ -31,17 +31,37 @@ export default function AuthButton() {
               textAlign: 'left'
             }}
           >
-            <Image
-              src={user.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'}
-              alt={user.displayName || 'User Profile'}
-              width={32}
-              height={32}
-              style={{
-                borderRadius: '50%',
-                border: '2px solid var(--border-color)',
-                objectFit: 'cover'
-              }}
-            />
+            {user.photoURL ? (
+              <Image
+                src={user.photoURL}
+                alt={user.displayName || 'User Profile'}
+                width={32}
+                height={32}
+                style={{
+                  borderRadius: '50%',
+                  border: '2px solid var(--border-color)',
+                  objectFit: 'cover'
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, var(--accent-primary), #7c3aed)',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 700,
+                  fontSize: '0.875rem',
+                  border: '2px solid var(--border-color)',
+                }}
+              >
+                {(user.displayName || 'A').charAt(0).toUpperCase()}
+              </div>
+            )}
             <div style={{ lineHeight: 1.2 }}>
               <div style={{ fontSize: '0.8125rem', fontWeight: 600 }}>{user.displayName}</div>
               <div style={{ fontSize: '0.6875rem', color: 'var(--accent-secondary)' }}>

@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: 'Top editors on The Integrity Wiki ranked by credibility points.',
 }
 
+export const dynamic = 'force-dynamic'
+
 export default async function LeaderboardPage() {
   let editors: Awaited<ReturnType<typeof getTopEditors>> = []
   try {
