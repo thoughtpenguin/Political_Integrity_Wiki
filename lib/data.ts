@@ -32,9 +32,14 @@ export async function getCandidate(id: string): Promise<Candidate | null> {
     
     // Merge top field values for period-agnostic fields
     const fields = EDITABLE_FIELDS.filter(f => !f.periodSpecific)
+    candidate.proposedValues = {}
     for (const field of fields) {
       try {
         const topValue = await getTopProposalValue(id, field.id)
+        const proposedVal = await getTopProposedValue(id, field.id)
+        if (proposedVal && proposedVal !== 'Unknown') {
+          candidate.proposedValues[field.id] = proposedVal
+        }
         if (topValue && topValue !== 'Unknown') {
           if (field.id === 'photo') candidate.photoUrl = topValue
           else if (field.id === 'status') candidate.status = topValue as Candidate['status']
@@ -83,9 +88,14 @@ export async function getAccountabilityPeriods(candidateId: string): Promise<Acc
     const periodSpecificFields = EDITABLE_FIELDS.filter(f => f.periodSpecific)
     
     periods = await Promise.all(periods.map(async (p) => {
+      p.proposedValues = {}
       for (const field of periodSpecificFields) {
         try {
           const topValue = await getTopProposalValue(candidateId, field.id, p.id)
+          const proposedVal = await getTopProposedValue(candidateId, field.id, p.id)
+          if (proposedVal && proposedVal !== 'Unknown') {
+            p.proposedValues[field.id] = proposedVal
+          }
           if (topValue && topValue !== 'Unknown') {
             const val = (field.type === 'number') ? parseFloat(topValue) : 
                         (field.type === 'json') ? JSON.parse(topValue) : topValue
@@ -191,10 +201,14 @@ export async function getProposals(
   }
 
   // Sort proposals according to the tiebreaker rules:
+  // 0. Pinned proposals first
   // 1. Upvote count descending
   // 2. Author account age ascending (older first)
   // 3. Author credibility points descending
   proposals.sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1
+    if (!a.pinned && b.pinned) return 1
+
     const votesDiff = (b.upvoteCount || 0) - (a.upvoteCount || 0)
     if (votesDiff !== 0) return votesDiff
 
@@ -273,6 +287,21 @@ export async function getTopProposalValue(
     return combinedPoints >= minPoints ? top.value : ''
   } catch (error) {
     console.error(`Error in getTopProposalValue for candidate ${candidateId}, field ${fieldId}:`, error)
+    return ''
+  }
+}
+
+export async function getTopProposedValue(
+  candidateId: string,
+  fieldId: string,
+  periodId?: string
+): Promise<string> {
+  try {
+    const proposals = await getProposals(candidateId, fieldId, periodId)
+    if (proposals.length === 0) return ''
+    return proposals[0].value
+  } catch (error) {
+    console.error(`Error in getTopProposedValue for candidate ${candidateId}, field ${fieldId}:`, error)
     return ''
   }
 }

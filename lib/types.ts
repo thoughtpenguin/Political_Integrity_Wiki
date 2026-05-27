@@ -198,6 +198,7 @@ export interface Candidate {
   createdBy: string
   createdAt: string
   updatedAt: string
+  proposedValues?: Record<string, string>
 }
 
 export interface IndustryRecord {
@@ -240,6 +241,7 @@ export interface AccountabilityPeriod {
   
   isHidden?: boolean
   reportDismissed?: boolean
+  proposedValues?: Record<string, string>
 }
 
 export interface DonationSizeBreakdown {

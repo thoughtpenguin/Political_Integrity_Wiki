@@ -24,6 +24,7 @@ interface PeriodOption {
   pacTypeBreakdown?: { corporate: number; political: number; trade: number; lobbyist: number; ideological: number; other: number }
   topPacDonors?: PacDonor[]
   reportDismissed?: boolean
+  proposedValues?: Record<string, string>
 }
 
 function formatCurrency(amount: number | undefined): string {
@@ -80,15 +81,7 @@ export default function AccountabilitySelector({
   }
   const locTotal = (donationLocation.inState || 0) + (donationLocation.outOfState || 0)
 
-  const pacType = selected.pacTypeBreakdown || {
-    corporate: 0,
-    political: 0,
-    trade: 0,
-    lobbyist: 0,
-    ideological: 0,
-    other: 0
-  }
-  const pacTypeTotal = selected.totalPacMoney || 1
+
 
   return (
     <div>
@@ -117,18 +110,33 @@ export default function AccountabilitySelector({
 
       {/* Financial Summary */}
       <div className="stats-grid" style={{ marginBottom: '1.5rem' }}>
-        <div className="card stat-card">
+        <div className="card stat-card" style={selected.totalRaised === undefined && selected.proposedValues?.['total_raised'] ? { border: '1px dashed var(--warning)' } : undefined}>
           <div className="stat-value">{formatCurrency(selected.totalRaised)}</div>
+          {selected.totalRaised === undefined && selected.proposedValues?.['total_raised'] && (
+            <div style={{ fontSize: '0.75rem', color: 'var(--warning)', marginTop: '0.25rem', fontWeight: 600 }}>
+              Proposed: {formatCurrency(parseFloat(selected.proposedValues['total_raised']))} (unverified)
+            </div>
+          )}
           <div className="stat-label">Total Raised</div>
         </div>
-        <div className="card stat-card">
+        <div className="card stat-card" style={selected.totalPacMoney === undefined && selected.proposedValues?.['total_pac_money'] ? { border: '1px dashed var(--warning)' } : undefined}>
           <div className="stat-value">{formatCurrency(selected.totalPacMoney)}</div>
+          {selected.totalPacMoney === undefined && selected.proposedValues?.['total_pac_money'] && (
+            <div style={{ fontSize: '0.75rem', color: 'var(--warning)', marginTop: '0.25rem', fontWeight: 600 }}>
+              Proposed: {formatCurrency(parseFloat(selected.proposedValues['total_pac_money']))} (unverified)
+            </div>
+          )}
           <div className="stat-label">Total PAC Money</div>
         </div>
-        <div className="card stat-card">
+        <div className="card stat-card" style={selected.corporatePacMoney === undefined && selected.proposedValues?.['corporate_pac_money'] ? { border: '1px dashed var(--warning)' } : undefined}>
           <div className={`stat-value ${selected.corporatePacMoney === 0 ? 'green' : ''}`}>
             {formatCurrency(selected.corporatePacMoney)}
           </div>
+          {selected.corporatePacMoney === undefined && selected.proposedValues?.['corporate_pac_money'] && (
+            <div style={{ fontSize: '0.75rem', color: 'var(--warning)', marginTop: '0.25rem', fontWeight: 600 }}>
+              Proposed: {formatCurrency(parseFloat(selected.proposedValues['corporate_pac_money']))} (unverified)
+            </div>
+          )}
           <div className="stat-label">
             Corporate PAC Money
             {selected.corporatePacMoney === undefined && (
@@ -138,14 +146,24 @@ export default function AccountabilitySelector({
             )}
           </div>
         </div>
-        <div className="card stat-card">
+        <div className="card stat-card" style={selected.peakStockValue === undefined && selected.proposedValues?.['peak_stock_value'] ? { border: '1px dashed var(--warning)' } : undefined}>
           <div className={`stat-value ${selected.peakStockValue === 0 ? 'green' : ''}`}>
             {formatCurrency(selected.peakStockValue)}
           </div>
+          {selected.peakStockValue === undefined && selected.proposedValues?.['peak_stock_value'] && (
+            <div style={{ fontSize: '0.75rem', color: 'var(--warning)', marginTop: '0.25rem', fontWeight: 600 }}>
+              Proposed: {formatCurrency(parseFloat(selected.proposedValues['peak_stock_value']))} (unverified)
+            </div>
+          )}
           <div className="stat-label">Peak Stock Value</div>
         </div>
-        <div className="card stat-card">
+        <div className="card stat-card" style={selected.peakNetAssets === undefined && selected.proposedValues?.['peak_net_assets'] ? { border: '1px dashed var(--warning)' } : undefined}>
           <div className="stat-value">{formatCurrency(selected.peakNetAssets)}</div>
+          {selected.peakNetAssets === undefined && selected.proposedValues?.['peak_net_assets'] && (
+            <div style={{ fontSize: '0.75rem', color: 'var(--warning)', marginTop: '0.25rem', fontWeight: 600 }}>
+              Proposed: {formatCurrency(parseFloat(selected.proposedValues['peak_net_assets']))} (unverified)
+            </div>
+          )}
           <div className="stat-label">Peak Net Assets</div>
         </div>
       </div>
@@ -184,6 +202,11 @@ export default function AccountabilitySelector({
             <div style={{ fontWeight: 700, marginTop: '0.25rem', fontSize: '1.25rem', color: selected.stockTradingVolume === 0 ? 'var(--success)' : 'var(--text-primary)' }}>
               {formatCurrency(selected.stockTradingVolume)}
             </div>
+            {selected.stockTradingVolume === undefined && selected.proposedValues?.['stock_trading_volume'] && (
+              <div style={{ fontSize: '0.75rem', color: 'var(--warning)', marginTop: '0.25rem', fontWeight: 600 }}>
+                Proposed: {formatCurrency(parseFloat(selected.proposedValues['stock_trading_volume']))} (unverified)
+              </div>
+            )}
             <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)', marginTop: '0.125rem' }}>Traded while in office</div>
           </div>
         )}
@@ -194,87 +217,180 @@ export default function AccountabilitySelector({
           <div className="card" style={{ padding: '1rem' }}>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Party</div>
             <div style={{ fontWeight: 700, marginTop: '0.25rem' }}>{selected.party || 'Unknown'}</div>
+            {selected.party === undefined && selected.proposedValues?.['party'] && (
+              <div style={{ fontSize: '0.75rem', color: 'var(--warning)', marginTop: '0.25rem', fontWeight: 600 }}>
+                Proposed: {selected.proposedValues['party']} (unverified)
+              </div>
+            )}
           </div>
         )}
         {!['president', 'vice_president', 'cabinet'].includes(selected.position) && (
           <div className="card" style={{ padding: '1rem' }}>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Region</div>
             <div style={{ fontWeight: 700, marginTop: '0.25rem' }}>{selected.region || 'Unknown'}</div>
+            {selected.region === undefined && selected.proposedValues?.['region'] && (
+              <div style={{ fontSize: '0.75rem', color: 'var(--warning)', marginTop: '0.25rem', fontWeight: 600 }}>
+                Proposed: {selected.proposedValues['region']} (unverified)
+              </div>
+            )}
           </div>
         )}
         <div className="card" style={{ padding: '1rem' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Earmarked Money</div>
           <div style={{ fontWeight: 700, marginTop: '0.25rem' }}>{formatCurrency(selected.earmarkedMoney)}</div>
+          {selected.earmarkedMoney === undefined && selected.proposedValues?.['earmarked_money'] && (
+            <div style={{ fontSize: '0.75rem', color: 'var(--warning)', marginTop: '0.25rem', fontWeight: 600 }}>
+              Proposed: {formatCurrency(parseFloat(selected.proposedValues['earmarked_money']))} (unverified)
+            </div>
+          )}
         </div>
         <div className="card" style={{ padding: '1rem' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>AIPAC Money</div>
           <div style={{ fontWeight: 700, marginTop: '0.25rem' }}>{formatCurrency(selected.aipacMoney)}</div>
+          {selected.aipacMoney === undefined && selected.proposedValues?.['aipac_money'] && (
+            <div style={{ fontSize: '0.75rem', color: 'var(--warning)', marginTop: '0.25rem', fontWeight: 600 }}>
+              Proposed: {formatCurrency(parseFloat(selected.proposedValues['aipac_money']))} (unverified)
+            </div>
+          )}
         </div>
       </div>
 
       {/* Donation Breakdown Charts */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
         {/* Size Breakdown */}
-        {selected.donationSizeBreakdown && sizeTotal > 0 && (
-          <div className="card">
-            <h4 style={{ marginBottom: '1rem', fontSize: '0.9375rem' }}>Donation Size Breakdown</h4>
-            <DonationBar label="Under $200" amount={donationSize.under200} total={sizeTotal} color="#6366f1" />
-            <DonationBar label="$200–$499" amount={donationSize.from200to499} total={sizeTotal} color="#818cf8" />
-            <DonationBar label="$500–$999" amount={donationSize.from500to999} total={sizeTotal} color="#a5b4fc" />
-            <DonationBar label="$1,000–$1,999" amount={donationSize.from1000to1999} total={sizeTotal} color="#f59e0b" />
-            <DonationBar label="$2,000+" amount={donationSize.from2000plus} total={sizeTotal} color="#ef4444" />
+        {((selected.donationSizeBreakdown && sizeTotal > 0) || selected.proposedValues?.['donation_size_breakdown']) && (
+          <div className="card" style={!selected.donationSizeBreakdown ? { border: '1px dashed var(--warning)' } : undefined}>
+            <h4 style={{ marginBottom: '1rem', fontSize: '0.9375rem', display: 'flex', justifyContent: 'space-between' }}>
+              <span>Donation Size Breakdown</span>
+              {!selected.donationSizeBreakdown && <span style={{ fontSize: '0.625rem', color: 'var(--warning)', fontWeight: 600 }}>PROPOSED (UNVERIFIED)</span>}
+            </h4>
+            {(() => {
+              const displaySize = selected.donationSizeBreakdown || (() => {
+                try {
+                  return JSON.parse(selected.proposedValues!['donation_size_breakdown']) as typeof donationSize
+                } catch {
+                  return null
+                }
+              })()
+              if (!displaySize) return <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>Invalid proposal format</div>
+              const displayTotal = (displaySize.under200 || 0) +
+                                   (displaySize.from200to499 || 0) +
+                                   (displaySize.from500to999 || 0) +
+                                   (displaySize.from1000to1999 || 0) +
+                                   (displaySize.from2000plus || 0)
+              if (displayTotal === 0) return <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>No donations recorded</div>
+              return (
+                <>
+                  <DonationBar label="Under $200" amount={displaySize.under200} total={displayTotal} color="#6366f1" />
+                  <DonationBar label="$200–$499" amount={displaySize.from200to499} total={displayTotal} color="#818cf8" />
+                  <DonationBar label="$500–$999" amount={displaySize.from500to999} total={displayTotal} color="#a5b4fc" />
+                  <DonationBar label="$1,000–$1,999" amount={displaySize.from1000to1999} total={displayTotal} color="#f59e0b" />
+                  <DonationBar label="$2,000+" amount={displaySize.from2000plus} total={displayTotal} color="#ef4444" />
+                </>
+              )
+            })()}
           </div>
         )}
 
         {/* Location Breakdown */}
-        {selected.donationLocationBreakdown && locTotal > 0 && (
-          <div className="card">
-            <h4 style={{ marginBottom: '1rem', fontSize: '0.9375rem' }}>Donation Location Breakdown</h4>
-            <DonationBar label="In-State" amount={donationLocation.inState} total={locTotal} color="#10b981" />
-            <DonationBar label="Out-of-State" amount={donationLocation.outOfState} total={locTotal} color="#f59e0b" />
+        {((selected.donationLocationBreakdown && locTotal > 0) || selected.proposedValues?.['donation_location_breakdown']) && (
+          <div className="card" style={!selected.donationLocationBreakdown ? { border: '1px dashed var(--warning)' } : undefined}>
+            <h4 style={{ marginBottom: '1rem', fontSize: '0.9375rem', display: 'flex', justifyContent: 'space-between' }}>
+              <span>Donation Location Breakdown</span>
+              {!selected.donationLocationBreakdown && <span style={{ fontSize: '0.625rem', color: 'var(--warning)', fontWeight: 600 }}>PROPOSED (UNVERIFIED)</span>}
+            </h4>
+            {(() => {
+              const displayLoc = selected.donationLocationBreakdown || (() => {
+                try {
+                  return JSON.parse(selected.proposedValues!['donation_location_breakdown']) as typeof donationLocation
+                } catch {
+                  return null
+                }
+              })()
+              if (!displayLoc) return <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>Invalid proposal format</div>
+              const displayTotal = (displayLoc.inState || 0) + (displayLoc.outOfState || 0)
+              if (displayTotal === 0) return <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>No donations recorded</div>
+              return (
+                <>
+                  <DonationBar label="In-State" amount={displayLoc.inState} total={displayTotal} color="#10b981" />
+                  <DonationBar label="Out-of-State" amount={displayLoc.outOfState} total={displayTotal} color="#f59e0b" />
+                </>
+              )
+            })()}
           </div>
         )}
 
         {/* PAC Type Breakdown */}
-        {selected.pacTypeBreakdown && (
-          <div className="card" style={{ gridColumn: 'span 2' }}>
-            <h4 style={{ marginBottom: '1rem', fontSize: '0.9375rem' }}>PAC Type Breakdown</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-              <DonationBar label="Corporate" amount={pacType.corporate} total={pacTypeTotal} color="#6366f1" />
-              <DonationBar label="Political/Party" amount={pacType.political} total={pacTypeTotal} color="#10b981" />
-              <DonationBar label="Trade Association" amount={pacType.trade} total={pacTypeTotal} color="#f59e0b" />
-              <DonationBar label="Lobbyist" amount={pacType.lobbyist} total={pacTypeTotal} color="#ef4444" />
-              <DonationBar label="Ideological" amount={pacType.ideological} total={pacTypeTotal} color="#8b5cf6" />
-              <DonationBar label="Other" amount={pacType.other} total={pacTypeTotal} color="#6b7280" />
-            </div>
+        {(selected.pacTypeBreakdown || selected.proposedValues?.['pac_type_breakdown']) && (
+          <div className="card" style={{ gridColumn: 'span 2', ...(!selected.pacTypeBreakdown ? { border: '1px dashed var(--warning)' } : undefined) }}>
+            <h4 style={{ marginBottom: '1rem', fontSize: '0.9375rem', display: 'flex', justifyContent: 'space-between' }}>
+              <span>PAC Type Breakdown</span>
+              {!selected.pacTypeBreakdown && <span style={{ fontSize: '0.625rem', color: 'var(--warning)', fontWeight: 600 }}>PROPOSED (UNVERIFIED)</span>}
+            </h4>
+            {(() => {
+              const displayPacType = selected.pacTypeBreakdown || (() => {
+                try {
+                  return JSON.parse(selected.proposedValues!['pac_type_breakdown']) as NonNullable<typeof selected.pacTypeBreakdown>
+                } catch {
+                  return null
+                }
+              })()
+              if (!displayPacType) return <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>Invalid proposal format</div>
+              const displayTotal = selected.totalPacMoney || 1
+              return (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
+                  <DonationBar label="Corporate" amount={displayPacType.corporate} total={displayTotal} color="#6366f1" />
+                  <DonationBar label="Political/Party" amount={displayPacType.political} total={displayTotal} color="#10b981" />
+                  <DonationBar label="Trade Association" amount={displayPacType.trade} total={displayTotal} color="#f59e0b" />
+                  <DonationBar label="Lobbyist" amount={displayPacType.lobbyist} total={displayTotal} color="#ef4444" />
+                  <DonationBar label="Ideological" amount={displayPacType.ideological} total={displayTotal} color="#8b5cf6" />
+                  <DonationBar label="Other" amount={displayPacType.other} total={displayTotal} color="#6b7280" />
+                </div>
+              )
+            })()}
           </div>
         )}
       </div>
 
       {/* Top PAC Donors */}
-      {selected.topPacDonors && selected.topPacDonors.length > 0 && (
-        <div className="card">
-          <h4 style={{ marginBottom: '1rem', fontSize: '0.9375rem' }}>Top PAC Donors</h4>
-          <div className="data-table-wrapper">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>PAC Name</th>
-                  <th>Type</th>
-                  <th style={{ textAlign: 'right' }}>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {selected.topPacDonors.map((donor, i) => (
-                  <tr key={i}>
-                    <td style={{ fontWeight: 600 }}>{donor.name}</td>
-                    <td style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>{donor.type}</td>
-                    <td style={{ textAlign: 'right', fontWeight: 600 }}>{formatCurrency(donor.amount)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {((selected.topPacDonors && selected.topPacDonors.length > 0) || selected.proposedValues?.['top_pac_donors']) && (
+        <div className="card" style={!selected.topPacDonors ? { border: '1px dashed var(--warning)' } : undefined}>
+          <h4 style={{ marginBottom: '1rem', fontSize: '0.9375rem', display: 'flex', justifyContent: 'space-between' }}>
+            <span>Top PAC Donors</span>
+            {!selected.topPacDonors && <span style={{ fontSize: '0.625rem', color: 'var(--warning)', fontWeight: 600 }}>PROPOSED (UNVERIFIED)</span>}
+          </h4>
+          {(() => {
+            const displayDonors = selected.topPacDonors || (() => {
+              try {
+                return JSON.parse(selected.proposedValues!['top_pac_donors']) as PacDonor[]
+              } catch {
+                return null
+              }
+            })()
+            if (!displayDonors || displayDonors.length === 0) return <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>No donor data recorded</div>
+            return (
+              <div className="data-table-wrapper">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>PAC Name</th>
+                      <th>Type</th>
+                      <th style={{ textAlign: 'right' }}>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {displayDonors.map((donor, i) => (
+                      <tr key={i}>
+                        <td style={{ fontWeight: 600 }}>{donor.name}</td>
+                        <td style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>{donor.type}</td>
+                        <td style={{ textAlign: 'right', fontWeight: 600 }}>{formatCurrency(donor.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
+          })()}
         </div>
       )}
 

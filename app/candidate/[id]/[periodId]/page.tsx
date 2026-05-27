@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getCandidate, getAccountabilityPeriods, getBadgeProposals, getTopBadgeStatus } from '@/lib/data'
-import { BADGE_DEFINITIONS, EDITABLE_FIELDS, POSITION_LABELS, type BadgeStatus } from '@/lib/types'
+import { BADGE_DEFINITIONS, EDITABLE_FIELDS, POSITION_LABELS, type BadgeStatus, type Candidate } from '@/lib/types'
 import type { Metadata } from 'next'
 import AccountabilitySelector from '../AccountabilitySelector'
 import BadgeSection from '../BadgeSection'
@@ -62,12 +62,14 @@ export default async function CandidatePeriodPage(props: { params: Promise<{ id:
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '3rem', fontWeight: 900,
-              background: candidate.photoUrl ? `url(${candidate.photoUrl}) center/cover no-repeat` : 'linear-gradient(135deg, var(--accent-primary), #7c3aed)',
+              background: candidate.photoUrl ? `url(${candidate.photoUrl}) center/cover no-repeat` :
+                (candidate.proposedValues?.['photo'] ? `url(${candidate.proposedValues['photo']}) center/cover no-repeat` : 'linear-gradient(135deg, var(--accent-primary), #7c3aed)'),
               color: 'white',
               overflow: 'hidden',
+              border: (!candidate.photoUrl && candidate.proposedValues?.['photo']) ? '3px dashed var(--warning)' : undefined
             }}
           >
-            {!candidate.photoUrl && candidate.name.charAt(0)}
+            {!candidate.photoUrl && !candidate.proposedValues?.['photo'] && candidate.name.charAt(0)}
           </div>
           <div className="candidate-info">
             <h1 className="candidate-name">{candidate.name}</h1>
@@ -80,27 +82,66 @@ export default async function CandidatePeriodPage(props: { params: Promise<{ id:
                   {candidate.status.replace('_', ' ').toUpperCase()}
                 </span>
               )}
+              {!candidate.status && candidate.proposedValues?.['status'] && (
+                <span className="meta-tag" style={{
+                  border: '1px dashed var(--warning)',
+                  color: 'var(--warning)',
+                }}>
+                  PROPOSED: {candidate.proposedValues['status'].replace('_', ' ').toUpperCase()} (unverified)
+                </span>
+              )}
               {candidate.fecIds && candidate.fecIds.length > 0 && (
                 <span className="meta-tag">FEC: {candidate.fecIds.join(', ')}</span>
               )}
               {candidate.nextElectionDate && (
                 <span className="meta-tag">Next Election: {candidate.nextElectionDate}</span>
               )}
+              {!candidate.nextElectionDate && candidate.proposedValues?.['next_election_date'] && (
+                <span className="meta-tag" style={{
+                  border: '1px dashed var(--warning)',
+                  color: 'var(--warning)',
+                }}>
+                  Proposed Election: {candidate.proposedValues['next_election_date']} (unverified)
+                </span>
+              )}
             </div>
 
             {/* Contact Info — only if candidate has ever held a non-national, non-judicial position */}
-            {candidate.contactInfo && hasEligibleContactPosition && (
+            {hasEligibleContactPosition && (candidate.contactInfo || candidate.proposedValues?.['contact_info']) && (
               <details style={{ marginTop: '0.75rem' }}>
                 <summary style={{ cursor: 'pointer', color: 'var(--accent-secondary)', fontSize: '0.875rem' }}>
-                  Contact Information
+                  Contact Information {(!candidate.contactInfo && candidate.proposedValues?.['contact_info']) ? ' (Proposed)' : ''}
                 </summary>
                 <div style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                  {candidate.contactInfo.phone && <div>📞 {candidate.contactInfo.phone}</div>}
-                  {candidate.contactInfo.email && <div>✉️ {candidate.contactInfo.email}</div>}
-                  {candidate.contactInfo.website && (
-                    <div>🌐 <a href={candidate.contactInfo.website} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-secondary)' }}>{candidate.contactInfo.website}</a></div>
+                  {candidate.contactInfo ? (
+                    <>
+                      {candidate.contactInfo.phone && <div>📞 {candidate.contactInfo.phone}</div>}
+                      {candidate.contactInfo.email && <div>✉️ {candidate.contactInfo.email}</div>}
+                      {candidate.contactInfo.website && (
+                        <div>🌐 <a href={candidate.contactInfo.website} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-secondary)' }}>{candidate.contactInfo.website}</a></div>
+                      )}
+                      {candidate.contactInfo.office && <div>🏛️ {candidate.contactInfo.office}</div>}
+                    </>
+                  ) : (
+                    (() => {
+                      try {
+                        const proposedContact = JSON.parse(candidate.proposedValues!['contact_info']) as NonNullable<Candidate['contactInfo']>
+                        return (
+                          <div style={{ borderLeft: '2px dashed var(--warning)', paddingLeft: '0.5rem' }}>
+                            <div style={{ fontSize: '0.625rem', color: 'var(--warning)', fontWeight: 600, marginBottom: '0.25rem' }}>UNVERIFIED PROPOSAL:</div>
+                            {proposedContact.phone && <div>📞 {proposedContact.phone}</div>}
+                            {proposedContact.email && <div>✉️ {proposedContact.email}</div>}
+                            {proposedContact.website && (
+                              <div>🌐 <a href={proposedContact.website} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-secondary)' }}>{proposedContact.website}</a></div>
+                            )}
+                            {proposedContact.office && <div>🏛️ {proposedContact.office}</div>}
+                          </div>
+                        )
+                      } catch {
+                        return null
+                      }
+                    })()
                   )}
-                  {candidate.contactInfo.office && <div>🏛️ {candidate.contactInfo.office}</div>}
                 </div>
               </details>
             )}
@@ -126,19 +167,45 @@ export default async function CandidatePeriodPage(props: { params: Promise<{ id:
         </section>
 
         {/* Industries */}
-        {candidate.industries && candidate.industries.length > 0 && (
+        {((candidate.industries && candidate.industries.length > 0) || candidate.proposedValues?.['industries']) && (
           <section style={{ marginBottom: '2rem' }}>
             <h3 className="section-title">Private Sector Employment & Potential Conflicts</h3>
-            {candidate.industries.map((ind, i) => (
-              <div key={i} className="card" style={{ marginBottom: '0.5rem' }}>
-                <div style={{ fontWeight: 600 }}>{ind.industry} {ind.years && `(${ind.years})`}</div>
-                {ind.actions && ind.actions.length > 0 && (
-                  <ul style={{ marginTop: '0.5rem', paddingLeft: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                    {ind.actions.map((action, j) => <li key={j}>{action}</li>)}
-                  </ul>
-                )}
-              </div>
-            ))}
+            {candidate.industries && candidate.industries.length > 0 ? (
+              candidate.industries.map((ind, i) => (
+                <div key={i} className="card" style={{ marginBottom: '0.5rem' }}>
+                  <div style={{ fontWeight: 600 }}>{ind.industry} {ind.years && `(${ind.years})`}</div>
+                  {ind.actions && ind.actions.length > 0 && (
+                    <ul style={{ marginTop: '0.5rem', paddingLeft: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                      {ind.actions.map((action, j) => <li key={j}>{action}</li>)}
+                    </ul>
+                  )}
+                </div>
+              ))
+            ) : (
+              (() => {
+                try {
+                  const proposedInds = JSON.parse(candidate.proposedValues!['industries']) as typeof candidate.industries
+                  if (!proposedInds || proposedInds.length === 0) return null
+                  return (
+                    <div className="card" style={{ border: '1px dashed var(--warning)', padding: '1rem' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--warning)', marginBottom: '0.5rem', fontWeight: 600 }}>PROPOSED BY COMMUNITY (UNVERIFIED):</div>
+                      {proposedInds.map((ind, i) => (
+                        <div key={i} style={{ marginBottom: '0.75rem' }}>
+                          <div style={{ fontWeight: 600 }}>{ind.industry} {ind.years && `(${ind.years})`}</div>
+                          {ind.actions && ind.actions.length > 0 && (
+                            <ul style={{ marginTop: '0.25rem', paddingLeft: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                              {ind.actions.map((action, j) => <li key={j}>{action}</li>)}
+                            </ul>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )
+                } catch {
+                  return null
+                }
+              })()
+            )}
           </section>
         )}
 
@@ -169,6 +236,7 @@ export default async function CandidatePeriodPage(props: { params: Promise<{ id:
               pacTypeBreakdown: p.pacTypeBreakdown,
               topPacDonors: p.topPacDonors,
               reportDismissed: p.reportDismissed,
+              proposedValues: p.proposedValues,
             }))}
           />
 
