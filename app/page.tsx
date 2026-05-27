@@ -37,7 +37,9 @@ export default async function HomePage(props: { searchParams: Promise<{ level?: 
   } catch { /* DB may not be initialized yet */ }
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in" style={{
+      marginTop: '-2rem'
+    }}>
       {/* Hero Section */}
       <section className="hero">
         <div className="glow-orb glow-orb-primary"></div>
