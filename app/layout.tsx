@@ -44,7 +44,23 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="antialiased">
+    <html lang="en" className="antialiased" suppressHydrationWarning>
+      <head>
+        {/* Prevent flash of wrong theme: read localStorage before first paint */}
+        <meta name="color-scheme" content="light dark" />
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `{
+              const s = localStorage.getItem('color-scheme');
+              if (s === 'light' || s === 'dark') {
+                document.documentElement.setAttribute('data-theme', s);
+                document.querySelector('meta[name="color-scheme"]').content = s;
+              }
+            }`,
+          }}
+        />
+      </head>
       <body>
         <AuthProvider>
           <PointsConfigProvider>

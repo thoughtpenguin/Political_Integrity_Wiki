@@ -59,9 +59,10 @@ export default async function SearchPage(props: {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <div style={{
                       width: 48, height: 48, borderRadius: 'var(--radius-md)',
-                      background: c.photoUrl ? `url(${c.photoUrl}) center/cover no-repeat` : 'linear-gradient(135deg, var(--accent-primary), #7c3aed)',
+                      background: c.photoUrl ? `url(${c.photoUrl}) center/cover no-repeat` : 'var(--accent-glow)',
+                      border: '1px solid var(--border-color)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '1.25rem', fontWeight: 800, color: 'white', flexShrink: 0,
+                      fontSize: '1.125rem', fontWeight: 800, color: 'var(--accent-primary)', flexShrink: 0,
                       overflow: 'hidden',
                     }}>
                       {!c.photoUrl && c.name.charAt(0)}
@@ -95,13 +96,13 @@ export default async function SearchPage(props: {
                       gap: '0.25rem'
                     }}>
                       {Object.entries(c.topFields).map(([name, val], idx) => {
-                        if (name === 'Photo' || name === 'Current Status') return null; // Don't show URL or status as text
+                        if (name === 'Photo' || name === 'Current Status') return null;
                         let displayVal = val;
                         if (val.startsWith('[') || val.startsWith('{')) displayVal = 'Data provided';
                         return (
-                          <div key={idx} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ color: 'var(--text-muted)' }}>{name}:</span>
-                            <span style={{ fontWeight: 600, color: 'var(--accent-secondary)' }}>
+                          <div key={idx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'baseline' }}>
+                            <span style={{ color: 'var(--text-muted)', flexShrink: 0 }}>{name}:</span>
+                            <span style={{ fontWeight: 600, color: 'var(--accent-primary)', wordBreak: 'break-word' }}>
                               {displayVal.length > 20 ? displayVal.substring(0, 20) + '...' : displayVal}
                             </span>
                           </div>

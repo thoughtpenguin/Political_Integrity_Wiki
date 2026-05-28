@@ -37,33 +37,26 @@ export default async function HomePage(props: { searchParams: Promise<{ level?: 
   } catch { /* DB may not be initialized yet */ }
 
   return (
-    <div className="animate-fade-in" style={{
-      marginTop: '-2rem'
-    }}>
+    <div className="animate-fade-in">
       {/* Hero Section */}
       <section className="hero">
-        <div className="glow-orb glow-orb-primary"></div>
-        <div className="glow-orb glow-orb-secondary"></div>
-        <div className="hero-badge">
-          <span>✨ Crowdsourced political tracking</span>
-        </div>
         <h1>The Integrity Wiki</h1>
-        <p style={{ position: 'relative', zIndex: 1 }}>
+        <p>
           A crowdsourced campaign finance integrity index covering every elected position in America, at every level.
           Track PAC money, stock trades, integrity pledges, and more — verified by the community.
         </p>
-        <div className="hero-search" style={{ position: 'relative', zIndex: 1 }}>
+        <div className="hero-search">
           <SearchBar />
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.5rem', position: 'relative', zIndex: 1 }}>
-          <Link href="/create" className="btn btn-primary btn-lg" style={{ boxShadow: '0 0 15px rgba(99, 102, 241, 0.3)' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.25rem' }}>
+          <Link href="/create" className="btn btn-primary btn-lg">
             + Create Candidate Page
           </Link>
           <Link href="/how-it-works" className="btn btn-secondary btn-lg">
             How It Works
           </Link>
         </div>
-        <div style={{ position: 'relative', zIndex: 1 }}>
+        <div style={{ marginTop: '0.75rem' }}>
           <AdminFeedLink />
         </div>
       </section>
@@ -149,7 +142,7 @@ export default async function HomePage(props: { searchParams: Promise<{ level?: 
         </div>
 
         {/* Two Column Layout */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '2rem', marginTop: '2rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 340px)', gap: '2rem', marginTop: '2rem' }}>
           {/* Recent Candidates */}
           <section>
             <h2 className="section-title">
@@ -212,13 +205,13 @@ export default async function HomePage(props: { searchParams: Promise<{ level?: 
                           gap: '0.25rem'
                         }}>
                           {Object.entries(c.topFields).map(([name, val], idx) => {
-                            if (name === 'Photo' || name === 'Current Status') return null; // Don't show URL or status as text
+                            if (name === 'Photo' || name === 'Current Status') return null;
                             let displayVal = val;
                             if (val.startsWith('[') || val.startsWith('{')) displayVal = 'Data provided';
                             return (
-                              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ color: 'var(--text-muted)' }}>{name}:</span>
-                                <span style={{ fontWeight: 600, color: 'var(--accent-secondary)' }}>
+                              <div key={idx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'baseline' }}>
+                                <span style={{ color: 'var(--text-muted)', flexShrink: 0 }}>{name}:</span>
+                                <span style={{ fontWeight: 600, color: 'var(--accent-primary)', wordBreak: 'break-word' }}>
                                   {displayVal.length > 20 ? displayVal.substring(0, 20) + '...' : displayVal}
                                 </span>
                               </div>
