@@ -130,7 +130,7 @@ export default function AddAccountabilityPeriodModal({ candidateId, isOpen, onCl
             </div>
           ) : (
             <div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+              <div className="modal-grid-2-col">
                 <div>
                   <label className="label">Year Start</label>
                   <input name="yearStart" type="number" className="input" placeholder="2022" required />
@@ -140,7 +140,7 @@ export default function AddAccountabilityPeriodModal({ candidateId, isOpen, onCl
                   <input name="yearEnd" type="number" className="input" placeholder="2024" required />
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+              <div className="modal-grid-2-col">
                 <div>
                   <label className="label">Position</label>
                   <select name="position" className="select" required>
@@ -160,7 +160,7 @@ export default function AddAccountabilityPeriodModal({ candidateId, isOpen, onCl
                   </select>
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+              <div className="modal-grid-2-col">
                 <div>
                   <label className="label">Party</label>
                   <input name="party" className="input" placeholder="Democratic" />

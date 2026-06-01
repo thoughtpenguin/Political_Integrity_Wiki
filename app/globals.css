@@ -1236,18 +1236,221 @@ h4 { font-size: 1.0625rem; }
   color: var(--text-secondary);
 }
 
+/* ─── Responsive Classes ────────────────────────────────────────────── */
+.home-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 340px);
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.pac-breakdown-card {
+  grid-column: span 2;
+}
+
+.modal-grid-2-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.profile-photo-options.one-option {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.profile-photo-options.two-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.data-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 0.5rem;
+  border-radius: var(--radius-md);
+}
+
+/* Mobile Header Structure on Desktop */
+.header-top-row {
+  display: contents;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  order: 4;
+}
+
+.logo {
+  order: 1;
+}
+
+.header-search-wrapper {
+  order: 2;
+  flex: 1;
+  max-width: 440px;
+}
+
+.site-nav {
+  order: 3;
+}
+
+.mobile-menu-btn {
+  display: none;
+}
+
 /* ─── Responsive ────────────────────────────────────────────────────── */
+@media (max-width: 992px) {
+  .home-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
 @media (max-width: 768px) {
   .hero { padding: 2.5rem 1rem 2rem; }
   .hero h1 { font-size: 1.875rem; }
   .hero p { font-size: 0.9375rem; }
   .candidate-header { flex-direction: column; align-items: center; text-align: center; }
-  .header-inner { height: auto; padding: 0.625rem 0; flex-wrap: wrap; }
-  .nav-links { display: none; }
-  .search-wrapper { max-width: 100%; }
+  
+  /* Mobile Header overrides */
+  .header-inner {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    padding: 0.75rem 0;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+
+  .header-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .header-actions {
+    order: initial;
+  }
+
+  .logo {
+    order: initial;
+  }
+
+  .header-search-wrapper {
+    order: initial;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .search-wrapper {
+    max-width: 100%;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+  }
+
+  .mobile-menu-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--border-hover);
+    background: var(--bg-card-hover);
+  }
+
+  .site-nav {
+    order: initial;
+    display: none; /* Collapsed by default */
+    width: 100%;
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.5rem;
+  }
+
+  .site-nav.is-open {
+    display: block;
+    animation: fadeIn 0.25s ease-out;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 0.375rem;
+    align-items: stretch;
+  }
+
+  .nav-links li {
+    width: 100%;
+  }
+
+  .nav-links a {
+    display: flex;
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    text-align: left;
+    border-radius: var(--radius-md);
+  }
+
+  .nav-links a.btn {
+    justify-content: center;
+    margin-top: 0.25rem;
+  }
+
+  /* Charts grid stacks vertically on mobile */
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pac-breakdown-card {
+    grid-column: span 1;
+  }
+
   h1 { font-size: 1.625rem; }
   h2 { font-size: 1.25rem; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .container { padding: 0 1rem; }
   .contribution-banner { padding: 2rem 1.25rem; }
 }
+
+@media (max-width: 576px) {
+  .modal-grid-2-col {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-photo-options.two-options {
+    grid-template-columns: 1fr;
+  }
+}
+

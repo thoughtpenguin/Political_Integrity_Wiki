@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import SearchBar from './components/SearchBar'
 import AdminFeedLink from './components/AdminFeedLink'
+import PositionFilter from './components/PositionFilter'
 import { getTopEditors, getAllCandidates, getUpcomingElections } from '@/lib/data'
 import { POSITION_LABELS, type Position } from '@/lib/types'
 
@@ -16,9 +17,10 @@ function getPartyLabel(party?: string) {
   return party
 }
 
-export default async function HomePage(props: { searchParams: Promise<{ level?: string; state?: string }> }) {
-  const { level, state } = await props.searchParams
+export default async function HomePage(props: { searchParams: Promise<{ level?: string; state?: string; position?: string }> }) {
+  const { level, state, position } = await props.searchParams
   const selectedLevel = level || 'federal'
+  const selectedPosition = position || ''
 
   let topEditors: Awaited<ReturnType<typeof getTopEditors>> = []
   let recentCandidates: Awaited<ReturnType<typeof getAllCandidates>> = []
@@ -29,7 +31,14 @@ export default async function HomePage(props: { searchParams: Promise<{ level?: 
   } catch { /* DB may not be initialized yet */ }
 
   try {
-    recentCandidates = await getAllCandidates(12)
+    const allCandidates = await getAllCandidates(100)
+    recentCandidates = allCandidates
+    if (selectedPosition) {
+      recentCandidates = recentCandidates.filter(
+        (c) => c.latestPeriod?.position === selectedPosition
+      )
+    }
+    recentCandidates = recentCandidates.slice(0, 12)
   } catch { /* DB may not be initialized yet */ }
 
   try {
@@ -142,7 +151,7 @@ export default async function HomePage(props: { searchParams: Promise<{ level?: 
         </div>
 
         {/* Two Column Layout */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 340px)', gap: '2rem', marginTop: '2rem' }}>
+        <div className="home-layout">
           {/* Recent Candidates */}
           <section>
             <h2 className="section-title">
@@ -154,6 +163,7 @@ export default async function HomePage(props: { searchParams: Promise<{ level?: 
               </svg>
               Candidates
             </h2>
+            <PositionFilter selectedPosition={selectedPosition} currentLevel={selectedLevel} currentState={state} />
             {recentCandidates.length === 0 ? (
               <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
                 <p className="text-secondary" style={{ marginBottom: '1rem' }}>

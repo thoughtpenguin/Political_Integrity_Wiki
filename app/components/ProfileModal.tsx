@@ -85,7 +85,7 @@ export default function ProfileModal({ isOpen, onClose, isInitialSetup = false }
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: 'left' }}>
           <div>
             <label className="label" style={{ marginBottom: '0.75rem' }}>Profile Picture</label>
-            <div style={{ display: 'grid', gridTemplateColumns: googlePhotoURL ? '1fr 1fr' : '1fr', gap: '1rem', marginBottom: '0.5rem' }}>
+            <div className={`profile-photo-options ${googlePhotoURL ? 'two-options' : 'one-option'}`}>
               {/* Option 1: Google Photo */}
               {googlePhotoURL && (
                 <button

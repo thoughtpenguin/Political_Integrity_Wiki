@@ -256,7 +256,7 @@ export default function AccountabilitySelector({
       </div>
 
       {/* Donation Breakdown Charts */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+      <div className="charts-grid">
         {/* Size Breakdown */}
         {((selected.donationSizeBreakdown && sizeTotal > 0) || selected.proposedValues?.['donation_size_breakdown']) && (
           <div className="card" style={!selected.donationSizeBreakdown ? { border: '1px dashed var(--warning)' } : undefined}>
@@ -322,7 +322,7 @@ export default function AccountabilitySelector({
 
         {/* PAC Type Breakdown */}
         {(selected.pacTypeBreakdown || selected.proposedValues?.['pac_type_breakdown']) && (
-          <div className="card" style={{ gridColumn: 'span 2', ...(!selected.pacTypeBreakdown ? { border: '1px dashed var(--warning)' } : undefined) }}>
+          <div className="card pac-breakdown-card" style={!selected.pacTypeBreakdown ? { border: '1px dashed var(--warning)' } : undefined}>
             <h4 style={{ marginBottom: '1rem', fontSize: '0.9375rem', display: 'flex', justifyContent: 'space-between' }}>
               <span>PAC Type Breakdown</span>
               {!selected.pacTypeBreakdown && <span style={{ fontSize: '0.625rem', color: 'var(--warning)', fontWeight: 600 }}>PROPOSED (UNVERIFIED)</span>}

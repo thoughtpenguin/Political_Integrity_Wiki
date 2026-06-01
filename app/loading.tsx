@@ -4,7 +4,7 @@ export default function Loading() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <div className="skeleton" style={{ height: 48, width: '60%' }} />
         <div className="skeleton" style={{ height: 20, width: '40%' }} />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginTop: '1rem' }}>
+        <div className="stats-grid">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="skeleton" style={{ height: 100, borderRadius: 'var(--radius-lg)' }} />
           ))}
