@@ -1,5 +1,7 @@
 # The Political Integrity Wiki
 
+<img width="1202" height="456" alt="Screenshot 2026-05-28 at 5 51 03 PM" src="https://github.com/user-attachments/assets/5aae4302-6e1b-4086-88f4-f2c046a5bf97" />
+
 An open-source, semi-decentralized platform for tracking U.S. campaign finance and political accountability. Using truth algorithms inspired by Reddit and prediction markets, the community crowdsources and verifies data that isn't always captured in automated feeds.
 
 ## Tech Stack
