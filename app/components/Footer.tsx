@@ -27,9 +27,6 @@ export default function Footer() {
           <li><Link href="/terms-of-service">Terms</Link></li>
           <li><Link href="/leaderboard">Leaderboard</Link></li>
           <li><Link href="/audit-log">Audit Log</Link></li>
-          <li><Link href="/sitemap.xml">Sitemap</Link></li>
-          <li><Link href="/robots.txt">robots.txt</Link></li>
-          <li><Link href="/llms.txt">llms.txt</Link></li>
         </ul>
       </div>
     </footer>
