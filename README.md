@@ -27,6 +27,7 @@ An open-source, semi-decentralized platform for tracking U.S. campaign finance a
 - **Node.js**: v20 or higher
 - **Python**: v3.11 or higher
 - **Firebase CLI**: `npm install -g firebase-tools`
+- **Java JDK**: v11 or higher (needed for emulation)
 
 ### Installation & Setup
 
