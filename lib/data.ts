@@ -493,6 +493,53 @@ export async function getUpcomingElections(
   })) as Election[]
 }
 
+export type FieldProposalStatus = 'none' | 'low_upvotes' | 'has_proposals'
+
+/**
+ * Efficiently fetches the top-proposal upvote count for each field,
+ * used to show a colored status indicator in the Contribute Data section.
+ *
+ * Returns a map of fieldId → FieldProposalStatus.
+ *   'none'          — no proposals exist
+ *   'low_upvotes'   — at least one proposal exists but the top has < 3 upvotes
+ *   'has_proposals' — at least one proposal exists with >= 3 upvotes
+ */
+export async function getFieldStatusSummaries(
+  candidateId: string,
+  fieldIds: string[],
+  periodId?: string
+): Promise<Record<string, FieldProposalStatus>> {
+  const result: Record<string, FieldProposalStatus> = {}
+
+  await Promise.all(
+    fieldIds.map(async (fieldId) => {
+      try {
+        let query = adminDb
+          .collection('proposals')
+          .where('candidateId', '==', candidateId)
+          .where('fieldId', '==', fieldId)
+
+        if (periodId) {
+          query = query.where('periodId', '==', periodId)
+        }
+
+        const snapshot = await query.orderBy('upvoteCount', 'desc').limit(1).get()
+
+        if (snapshot.empty) {
+          result[fieldId] = 'none'
+        } else {
+          const topUpvoteCount: number = snapshot.docs[0].data()?.upvoteCount ?? 0
+          result[fieldId] = topUpvoteCount >= 3 ? 'has_proposals' : 'low_upvotes'
+        }
+      } catch {
+        result[fieldId] = 'none'
+      }
+    })
+  )
+
+  return result
+}
+
 export async function getReports(): Promise<Report[]> {
   try {
     const snapshot = await adminDb.collection('reports')

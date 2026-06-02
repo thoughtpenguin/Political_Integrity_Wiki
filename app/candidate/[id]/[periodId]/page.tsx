@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getCandidate, getAccountabilityPeriods, getBadgeProposals, getTopBadgeStatus } from '@/lib/data'
+import { getCandidate, getAccountabilityPeriods, getBadgeProposals, getTopBadgeStatus, getFieldStatusSummaries, type FieldProposalStatus } from '@/lib/data'
 import { BADGE_DEFINITIONS, EDITABLE_FIELDS, POSITION_LABELS, type BadgeStatus, type Candidate } from '@/lib/types'
 import type { Metadata } from 'next'
 import AccountabilitySelector from '../AccountabilitySelector'
@@ -51,6 +51,18 @@ export default async function CandidatePeriodPage(props: { params: Promise<{ id:
     !['president', 'vice_president', 'cabinet'].includes(p.position) &&
     !['state_supreme_court_justice', 'appellate_court_judge', 'trial_court_judge'].includes(p.position)
   )
+
+  // Fetch proposal status for each editable field to power the colored indicators
+  const editableFieldsForPeriod = EDITABLE_FIELDS
+    .filter((f) => !f.id.startsWith('badge_'))
+    .filter((f) => selectedPeriod && f.applicablePositions.includes(selectedPeriod.position))
+  const periodSpecificFieldIds = editableFieldsForPeriod.filter(f => f.periodSpecific).map(f => f.id)
+  const agnosticFieldIds = editableFieldsForPeriod.filter(f => !f.periodSpecific).map(f => f.id)
+  const [periodFieldStatuses, agnosticFieldStatuses] = await Promise.all([
+    getFieldStatusSummaries(id, periodSpecificFieldIds, periodId),
+    getFieldStatusSummaries(id, agnosticFieldIds),
+  ])
+  const fieldStatuses: Record<string, FieldProposalStatus> = { ...agnosticFieldStatuses, ...periodFieldStatuses }
 
   return (
     <div className="container animate-fade-in">
@@ -253,9 +265,28 @@ export default async function CandidatePeriodPage(props: { params: Promise<{ id:
         {/* Link to field proposals */}
         <section style={{ marginTop: '2rem' }}>
           <h2 className="section-title">Contribute Data</h2>
-          <p className="text-secondary" style={{ marginBottom: '1rem', fontSize: '0.9375rem' }}>
+          <p className="text-secondary" style={{ marginBottom: '0.5rem', fontSize: '0.9375rem' }}>
             Help verify information about this candidate by proposing values and voting on proposals.
           </p>
+          {/* Legend */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--danger)', flexShrink: 0, display: 'inline-block' }} />
+              Needs a proposal
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--warning)', flexShrink: 0, display: 'inline-block' }} />
+              Proposal made — needs more votes
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--accent-secondary)', flexShrink: 0, display: 'inline-block' }} />
+              Well-supported proposal
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--success)', flexShrink: 0, display: 'inline-block' }} />
+              FEC verified
+            </span>
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.5rem' }}>
             {EDITABLE_FIELDS
               .filter((f) => !f.id.startsWith('badge_'))
@@ -276,9 +307,19 @@ export default async function CandidatePeriodPage(props: { params: Promise<{ id:
                         borderColor: 'var(--success-muted)'
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{field.name}</div>
-                        <span style={{ fontSize: '0.625rem', padding: '0.125rem 0.375rem', borderRadius: '4px', background: 'var(--success-muted)', color: 'var(--success)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span
+                            title="FEC verified"
+                            style={{
+                              width: 10, height: 10, borderRadius: '50%',
+                              background: 'var(--success)',
+                              flexShrink: 0, display: 'inline-block',
+                            }}
+                          />
+                          <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{field.name}</span>
+                        </div>
+                        <span style={{ fontSize: '0.625rem', padding: '0.125rem 0.375rem', borderRadius: '4px', background: 'var(--success-muted)', color: 'var(--success)', whiteSpace: 'nowrap' }}>
                           FEC VERIFIED
                         </span>
                       </div>
@@ -289,6 +330,16 @@ export default async function CandidatePeriodPage(props: { params: Promise<{ id:
                   )
                 }
 
+                const status: FieldProposalStatus = fieldStatuses[field.id] ?? 'none'
+                const dotColor =
+                  status === 'none'          ? 'var(--danger)' :
+                  status === 'low_upvotes'   ? 'var(--warning)' :
+                                              'var(--accent-secondary)'
+                const dotTitle =
+                  status === 'none'          ? 'No proposals yet — be the first!' :
+                  status === 'low_upvotes'   ? 'Proposal made — needs more votes (fewer than 3 upvotes)' :
+                                              'Well-supported proposal (3+ upvotes)'
+
                 return (
                   <Link
                     key={field.id}
@@ -296,8 +347,18 @@ export default async function CandidatePeriodPage(props: { params: Promise<{ id:
                     className="card"
                     style={{ textDecoration: 'none', color: 'inherit', padding: '1rem' }}
                   >
-                    <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{field.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                      <span
+                        title={dotTitle}
+                        style={{
+                          width: 10, height: 10, borderRadius: '50%',
+                          background: dotColor,
+                          flexShrink: 0, display: 'inline-block',
+                        }}
+                      />
+                      <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{field.name}</span>
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', paddingLeft: '1.375rem' }}>
                       {field.description.length > 80 ? `${field.description.substring(0, 80)}...` : field.description}
                     </div>
                   </Link>
