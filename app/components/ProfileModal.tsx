@@ -82,6 +82,21 @@ export default function ProfileModal({ isOpen, onClose, isInitialSetup = false }
             : 'Update your display name for the community.'}
         </p>
 
+        {isInitialSetup && (
+          <div style={{
+            padding: '0.75rem 1rem',
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--border-color)',
+            borderRadius: 'var(--radius-md)',
+            marginBottom: '1.5rem',
+            fontSize: '0.8125rem',
+            color: 'var(--text-secondary)',
+            lineHeight: '1.4'
+          }}>
+            🔒 <strong>Privacy Policy:</strong> We do not collect any personal data other than your public profile info (display name, chosen avatar) and the data contributions/proposals you actively submit to candidate profiles.
+          </div>
+        )}
+
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: 'left' }}>
           <div>
             <label className="label" style={{ marginBottom: '0.75rem' }}>Profile Picture</label>

@@ -55,8 +55,8 @@ export default function Header() {
               </Link>
             </li>
             <li>
-              <Link href="/audit-log" onClick={() => setIsMobileMenuOpen(false)}>
-                Audit Log
+              <Link href="/contribution-information" onClick={() => setIsMobileMenuOpen(false)}>
+                Contribution Info
               </Link>
             </li>
             <li>

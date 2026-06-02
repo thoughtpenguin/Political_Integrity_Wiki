@@ -121,10 +121,36 @@ export default function AddAccountabilityPeriodModal({ candidateId, isOpen, onCl
           {mode === 'fec' ? (
             <div>
               <div style={{ marginBottom: '1rem' }}>
-                <label className="label">FEC Candidate ID</label>
+                <label className="label">
+                  FEC Candidate ID{' '}
+                  <span style={{ fontSize: '0.75rem', fontWeight: 'normal' }}>
+                    (Find at{' '}
+                    <a
+                      href="https://www.fec.gov/data/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ textDecoration: 'underline', color: 'var(--accent-secondary)' }}
+                    >
+                      fec.gov/data
+                    </a>
+                    )
+                  </span>
+                </label>
                 <input name="fecId" className="input" placeholder="e.g. S4VT00033" required />
-                <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '0.375rem' }}>
-                  This will automatically pull all historical election data for this ID.
+                <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '0.5rem', lineHeight: '1.4' }}>
+                  This will automatically pull all historical election data for this ID. Get candidate IDs from{' '}
+                  <a
+                    href="https://www.fec.gov/data/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: 'underline', color: 'var(--accent-secondary)' }}
+                  >
+                    fec.gov/data
+                  </a>
+                  .
+                </p>
+                <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '0.375rem', lineHeight: '1.4' }}>
+                  💡 <strong>Note:</strong> A candidate may have run for different positions (e.g. House and Senate) and have multiple IDs; these are automatically consolidated into this profile.
                 </p>
               </div>
             </div>

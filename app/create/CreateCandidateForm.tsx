@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/app/components/AuthProvider'
 import { functions } from '@/lib/firebase-client'
@@ -55,7 +56,7 @@ export default function CreateCandidateForm() {
     <div>
       <p className="text-secondary" style={{ marginBottom: '2rem' }}>
         Add a new candidate to the wiki. For federal candidates, enter their FEC ID to automatically
-        import their financial data. State and local candidates require {config.createCandidateCost.toLocaleString()} credibility points.
+        import their financial data. Read our <Link href="/contribution-information" style={{ textDecoration: 'underline', color: 'var(--accent-secondary)' }}>Contribution Information</Link> page for instructions on finding FEC IDs. State and local candidates require {config.createCandidateCost.toLocaleString()} credibility points.
       </p>
 
       {/* Mode selector */}
@@ -92,7 +93,21 @@ export default function CreateCandidateForm() {
         {mode === 'fec' ? (
           <div className="card">
             <div style={{ marginBottom: '1rem' }}>
-              <label className="label" htmlFor="fec-id">FEC Candidate ID(s)</label>
+              <label className="label" htmlFor="fec-id">
+                FEC Candidate ID(s){' '}
+                <span style={{ fontSize: '0.75rem', fontWeight: 'normal' }}>
+                  (Find at{' '}
+                  <a
+                    href="https://www.fec.gov/data/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: 'underline', color: 'var(--accent-secondary)' }}
+                  >
+                    fec.gov/data
+                  </a>
+                  )
+                </span>
+              </label>
               <input
                 id="fec-id"
                 name="fecId"
@@ -100,8 +115,20 @@ export default function CreateCandidateForm() {
                 placeholder="e.g. P80001571, S4VT00033"
                 required
               />
-              <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '0.375rem' }}>
-                For federal candidates. Multiple IDs can be separated by commas.
+              <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '0.5rem', lineHeight: '1.4' }}>
+                For federal candidates. Get candidate IDs from{' '}
+                <a
+                  href="https://www.fec.gov/data/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: 'underline', color: 'var(--accent-secondary)' }}
+                >
+                  fec.gov/data
+                </a>
+                .
+              </p>
+              <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '0.375rem', lineHeight: '1.4' }}>
+                💡 <strong>Note on duplicate entries:</strong> When searching for a candidate on the FEC&apos;s website, the candidate may come up multiple times if they have run for multiple different positions. These will be automatically combined into a single candidate profile on this site by entering all of their IDs separated by commas.
               </p>
             </div>
             <button type="submit" className="btn btn-primary btn-lg" disabled={loading}>
