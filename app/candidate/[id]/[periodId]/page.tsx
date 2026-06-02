@@ -150,7 +150,7 @@ export default async function CandidatePeriodPage(props: { params: Promise<{ id:
 
         {/* Badges — Interactive Voting */}
         <section style={{ marginBottom: '2rem' }}>
-          <h3 className="section-title">Integrity Badges</h3>
+          <h2 className="section-title">Integrity Badges</h2>
           <p className="text-secondary" style={{ fontSize: '0.8125rem', marginBottom: '0.75rem' }}>
             Click a badge to view proposals and vote on its status. Cited sources (e.g., video clips) are required.
           </p>
@@ -169,7 +169,7 @@ export default async function CandidatePeriodPage(props: { params: Promise<{ id:
         {/* Industries */}
         {((candidate.industries && candidate.industries.length > 0) || candidate.proposedValues?.['industries']) && (
           <section style={{ marginBottom: '2rem' }}>
-            <h3 className="section-title">Private Sector Employment & Potential Conflicts</h3>
+            <h2 className="section-title">Private Sector Employment &amp; Potential Conflicts</h2>
             {candidate.industries && candidate.industries.length > 0 ? (
               candidate.industries.map((ind, i) => (
                 <div key={i} className="card" style={{ marginBottom: '0.5rem' }}>
@@ -252,7 +252,7 @@ export default async function CandidatePeriodPage(props: { params: Promise<{ id:
 
         {/* Link to field proposals */}
         <section style={{ marginTop: '2rem' }}>
-          <h3 className="section-title">Contribute Data</h3>
+          <h2 className="section-title">Contribute Data</h2>
           <p className="text-secondary" style={{ marginBottom: '1rem', fontSize: '0.9375rem' }}>
             Help verify information about this candidate by proposing values and voting on proposals.
           </p>

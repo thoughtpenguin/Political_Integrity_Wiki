@@ -46,18 +46,22 @@ export default function RootLayout({
   return (
     <html lang="en" className="antialiased" suppressHydrationWarning>
       <head>
+        {/* Preconnect to Google Fonts to eliminate critical request chaining */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/* Prevent flash of wrong theme: read localStorage before first paint */}
         <meta name="color-scheme" content="light dark" />
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `{
-              const s = localStorage.getItem('color-scheme');
+            __html: `(function(){
+              var s = localStorage.getItem('color-scheme');
               if (s === 'light' || s === 'dark') {
                 document.documentElement.setAttribute('data-theme', s);
-                document.querySelector('meta[name="color-scheme"]').content = s;
+                var m = document.querySelector('meta[name="color-scheme"]');
+                if (m) m.content = s;
               }
-            }`,
+            })();`,
           }}
         />
       </head>

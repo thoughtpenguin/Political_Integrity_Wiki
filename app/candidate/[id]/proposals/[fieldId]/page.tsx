@@ -63,7 +63,7 @@ export default async function ProposalsPage(
       />
 
       <div style={{ marginTop: '2rem' }}>
-        <h3 className="section-title">Community Proposals</h3>
+        <h2 className="section-title">Community Proposals</h2>
         {sorted.length === 0 ? (
           <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
             <p className="text-secondary">No proposals yet for this field.</p>

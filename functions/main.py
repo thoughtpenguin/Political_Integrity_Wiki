@@ -710,14 +710,15 @@ def admin_pin_proposal(req: https_fn.CallableRequest) -> dict:
 
     # Award points to upvoters (minus already earned)
     votes = proposal_ref.collection("votes").get()
-    for vote in votes:
-        voter_uid = vote.id
-        if voter_uid != author_uid:
-            voter_earned = proposal_data.get("accumulatedPoints", {}).get(voter_uid, 0)
-            voter_bonus = max(0, PIN_PROPOSAL_UPVOTER_REWARD - voter_earned)
-            db.collection("users").document(voter_uid).update({
-                "credibilityPoints": firestore.Increment(voter_bonus)
-            })
+    if len(votes) > 1:
+        for vote in votes:
+            voter_uid = vote.id
+            if voter_uid != author_uid:
+                voter_earned = proposal_data.get("accumulatedPoints", {}).get(voter_uid, 0)
+                voter_bonus = max(0, PIN_PROPOSAL_UPVOTER_REWARD - voter_earned)
+                db.collection("users").document(voter_uid).update({
+                    "credibilityPoints": firestore.Increment(voter_bonus)
+                })
 
     # Audit log
     admin_doc = db.collection("users").document(admin_uid).get()
@@ -1016,28 +1017,29 @@ def daily_credibility_update(event: scheduler_fn.ScheduledEvent) -> None:
             })
 
         # Award points to voters
-        for vote in votes:
-            voter_uid = vote.id
-            if voter_uid == poster_uid:
-                continue  # Avoid double-rewarding the poster as a voter
-            
-            if voter_uid not in user_data_map:
-                continue  # Skip if user profile doc doesn't exist (prevents update crash)
+        if len(votes) > 1:
+            for vote in votes:
+                voter_uid = vote.id
+                if voter_uid == poster_uid:
+                    continue  # Avoid double-rewarding the poster as a voter
+                
+                if voter_uid not in user_data_map:
+                    continue  # Skip if user profile doc doesn't exist (prevents update crash)
 
-            vote_data = vote.to_dict()
-            if not CredibilityCalculator.can_earn_points(vote_data.get("votedAt", "")):
-                continue
-            
-            vote_count = vote_data.get("voteCountAtTime", 0)
-            x = CredibilityCalculator.calculate_daily_points(vote_count, False)
-            if x > 0:
-                db.collection("users").document(voter_uid).update({
-                    "credibilityPoints": firestore.Increment(x)
-                })
-                # Track points earned per proposal
-                db.collection("proposals").document(top["id"]).update({
-                    f"accumulatedPoints.{voter_uid}": firestore.Increment(x)
-                })
+                vote_data = vote.to_dict()
+                if not CredibilityCalculator.can_earn_points(vote_data.get("votedAt", "")):
+                    continue
+                
+                vote_count = vote_data.get("voteCountAtTime", 0)
+                x = CredibilityCalculator.calculate_daily_points(vote_count, False)
+                if x > 0:
+                    db.collection("users").document(voter_uid).update({
+                        "credibilityPoints": firestore.Increment(x)
+                    })
+                    # Track points earned per proposal
+                    db.collection("proposals").document(top["id"]).update({
+                        f"accumulatedPoints.{voter_uid}": firestore.Increment(x)
+                    })
 
 
 @https_fn.on_call(timeout_sec=600)

@@ -348,7 +348,9 @@ export async function searchCandidates(query: string): Promise<CandidateWithPeri
       }
 
       const photoUrl = await getTopProposalValue(doc.id, 'photo')
+      const proposedPhotoUrl = await getTopProposedValue(doc.id, 'photo')
       const status = await getTopProposalValue(doc.id, 'status')
+      const proposedStatus = await getTopProposedValue(doc.id, 'status')
 
       const latestPeriod = periods[0] ? {
         position: periods[0].position,
@@ -358,11 +360,16 @@ export async function searchCandidates(query: string): Promise<CandidateWithPeri
         yearEnd: periods[0].yearEnd,
       } : undefined
 
+      const proposedValues: Record<string, string> = {}
+      if (proposedPhotoUrl && proposedPhotoUrl !== 'Unknown') proposedValues['photo'] = proposedPhotoUrl
+      if (proposedStatus && proposedStatus !== 'Unknown') proposedValues['status'] = proposedStatus
+
       return {
         id: doc.id,
         ...doc.data(),
         photoUrl: photoUrl && photoUrl !== 'Unknown' ? photoUrl : undefined,
         status: status && status !== 'Unknown' ? status as Candidate['status'] : undefined,
+        proposedValues,
         latestPeriodId: periods[0]?.id,
         topFields,
         latestPeriod,
@@ -402,7 +409,9 @@ export async function getAllCandidates(limit: number = 100): Promise<CandidateWi
     }
 
     const photoUrl = await getTopProposalValue(doc.id, 'photo')
+    const proposedPhotoUrl = await getTopProposedValue(doc.id, 'photo')
     const status = await getTopProposalValue(doc.id, 'status')
+    const proposedStatus = await getTopProposedValue(doc.id, 'status')
 
     const latestPeriod = periods[0] ? {
       position: periods[0].position,
@@ -412,11 +421,16 @@ export async function getAllCandidates(limit: number = 100): Promise<CandidateWi
       yearEnd: periods[0].yearEnd,
     } : undefined
 
+    const proposedValues: Record<string, string> = {}
+    if (proposedPhotoUrl && proposedPhotoUrl !== 'Unknown') proposedValues['photo'] = proposedPhotoUrl
+    if (proposedStatus && proposedStatus !== 'Unknown') proposedValues['status'] = proposedStatus
+
     return {
       id: doc.id,
       ...doc.data(),
       photoUrl: photoUrl && photoUrl !== 'Unknown' ? photoUrl : undefined,
       status: status && status !== 'Unknown' ? status as Candidate['status'] : undefined,
+      proposedValues,
       latestPeriodId: periods[0]?.id,
       topFields,
       latestPeriod,

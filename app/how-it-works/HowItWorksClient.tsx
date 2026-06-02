@@ -30,7 +30,7 @@ export default function HowItWorksClient() {
           <li><strong>Submit a proposal</strong> for any field by providing a value and citations (URLs with optional explanations). This costs <strong>{config.submitProposalCost} credibility points</strong>.</li>
           <li><strong>Upvote proposals</strong> you believe are accurate. You can upvote <strong>one proposal per field</strong>.</li>
           <li>The <strong>top-voted proposal</strong> becomes the displayed value, but only if accounts with at least a combined <strong>{config.minUpvoterCombinedPoints.toLocaleString()} credibility points</strong> have upvoted it. Otherwise, the field shows &quot;Unknown.&quot;</li>
-          <li><strong>Admins can &quot;pin&quot;</strong> a proposal to lock it as verified. Pinning a proposal <strong>locks the field</strong>, preventing any new proposals or votes, and awards <strong>{config.pinProposalAuthorReward} points</strong> to the poster and <strong>{config.pinProposalUpvoterReward} points</strong> to upvoters (minus any daily points they have already accumulated from this proposal).</li>
+          <li><strong>Admins can &quot;pin&quot;</strong> a proposal to lock it as verified. Pinning a proposal <strong>locks the field</strong>, preventing any new proposals or votes, and awards <strong>{config.pinProposalAuthorReward} points</strong> to the poster and <strong>{config.pinProposalUpvoterReward} points</strong> to upvoters (minus any daily points they have already accumulated from this proposal, provided there is more than one upvoter).</li>
         </ol>
       </section>
 
@@ -41,13 +41,13 @@ export default function HowItWorksClient() {
         </p>
         <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
           <li><strong>Starting balance:</strong> {config.newUserPoints} points on account creation</li>
-          <li><strong>Daily earnings:</strong> If your proposal or a proposal you upvoted is the top proposal, you earn X points per day (starting {config.voteAgeDaysForDailyPoints} days after you voted).</li>
+          <li><strong>Daily earnings:</strong> If your proposal or a proposal you upvoted is the top proposal, you earn X points per day (starting {config.voteAgeDaysForDailyPoints} days after you voted, provided you are not the only person who has upvoted it).</li>
           <li><strong>Formula:</strong> <code style={{ background: 'var(--bg-secondary)', padding: '0.125rem 0.375rem', borderRadius: 4, fontSize: '0.8125rem' }}>X = round(max(0, 5 - (k/10) + p))</code> where <em>k</em> = upvote count when you voted and <em>p</em> = 5 if you&apos;re the original poster, else 0.</li>
           <li><strong>Early upvotes are worth more.</strong> The fewer upvotes a proposal had when you voted, the more daily points you earn.</li>
           <li><strong>Switching your upvote</strong> resets the {config.voteAgeDaysForDailyPoints}-day timer.</li>
           <li><strong>Accountability Period limit:</strong> Daily points only accrue while the candidate&apos;s accountability period is active. Once the period ends (i.e., after the final calendar year of holding or running for office), points stop accumulating.</li>
           <li><strong>Tiebreaker rules:</strong> If multiple proposals for a field have the same number of upvotes, the tie is broken first by the **author&apos;s account age** (older accounts win), and then by the **author&apos;s credibility points** (higher points win). Users are encouraged to upvote the oldest matching proposal rather than submitting duplicates.</li>
-          <li><strong>Pinned proposals:</strong> The poster gets {config.pinProposalAuthorReward} points and upvoters get {config.pinProposalUpvoterReward} points, minus any daily points already earned from that proposal.</li>
+          <li><strong>Pinned proposals:</strong> The poster gets {config.pinProposalAuthorReward} points and upvoters get {config.pinProposalUpvoterReward} points, minus any daily points already earned from that proposal, provided there is more than one upvoter.</li>
           <li><strong>Creating candidate pages:</strong> State/local candidates cost {config.createCandidateCost.toLocaleString()} points. Adding positions also costs {config.addPeriodManualCost.toLocaleString()} points.</li>
         </ul>
       </section>

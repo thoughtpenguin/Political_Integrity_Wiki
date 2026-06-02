@@ -59,18 +59,20 @@ export default async function SearchPage(props: {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <div style={{
                       width: 48, height: 48, borderRadius: 'var(--radius-md)',
-                      background: c.photoUrl ? `url(${c.photoUrl}) center/cover no-repeat` : 'var(--accent-glow)',
-                      border: '1px solid var(--border-color)',
+                      background: c.photoUrl ? `url(${c.photoUrl}) center/cover no-repeat` :
+                        (c.proposedValues?.['photo'] ? `url(${c.proposedValues['photo']}) center/cover no-repeat` : 'var(--accent-glow)'),
+                      border: (!c.photoUrl && c.proposedValues?.['photo']) ? '2px dashed var(--warning)' : '1px solid var(--border-color)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: '1.125rem', fontWeight: 800, color: 'var(--accent-primary)', flexShrink: 0,
                       overflow: 'hidden',
                     }}>
-                      {!c.photoUrl && c.name.charAt(0)}
+                      {!c.photoUrl && !c.proposedValues?.['photo'] && c.name.charAt(0)}
                     </div>
                     <div>
                       <div style={{ fontWeight: 700 }}>{c.name}</div>
-                      <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', textTransform: 'capitalize' }}>
-                        {c.status?.replace('_', ' ') || 'Unknown status'}
+                      <div style={{ fontSize: '0.8125rem', color: c.status ? 'var(--text-muted)' : 'var(--warning)', textTransform: 'capitalize' }}>
+                        {c.status ? c.status.replace('_', ' ') :
+                          (c.proposedValues?.['status'] ? `${c.proposedValues['status'].replace('_', ' ')} (proposed)` : 'Unknown status')}
                       </div>
                       {c.latestPeriod && (
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.125rem' }}>

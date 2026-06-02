@@ -260,10 +260,10 @@ export default function AccountabilitySelector({
         {/* Size Breakdown */}
         {((selected.donationSizeBreakdown && sizeTotal > 0) || selected.proposedValues?.['donation_size_breakdown']) && (
           <div className="card" style={!selected.donationSizeBreakdown ? { border: '1px dashed var(--warning)' } : undefined}>
-            <h4 style={{ marginBottom: '1rem', fontSize: '0.9375rem', display: 'flex', justifyContent: 'space-between' }}>
+            <h3 style={{ marginBottom: '1rem', fontSize: '0.9375rem', display: 'flex', justifyContent: 'space-between' }}>
               <span>Donation Size Breakdown</span>
               {!selected.donationSizeBreakdown && <span style={{ fontSize: '0.625rem', color: 'var(--warning)', fontWeight: 600 }}>PROPOSED (UNVERIFIED)</span>}
-            </h4>
+            </h3>
             {(() => {
               const displaySize = selected.donationSizeBreakdown || (() => {
                 try {
@@ -295,10 +295,10 @@ export default function AccountabilitySelector({
         {/* Location Breakdown */}
         {((selected.donationLocationBreakdown && locTotal > 0) || selected.proposedValues?.['donation_location_breakdown']) && (
           <div className="card" style={!selected.donationLocationBreakdown ? { border: '1px dashed var(--warning)' } : undefined}>
-            <h4 style={{ marginBottom: '1rem', fontSize: '0.9375rem', display: 'flex', justifyContent: 'space-between' }}>
+            <h3 style={{ marginBottom: '1rem', fontSize: '0.9375rem', display: 'flex', justifyContent: 'space-between' }}>
               <span>Donation Location Breakdown</span>
               {!selected.donationLocationBreakdown && <span style={{ fontSize: '0.625rem', color: 'var(--warning)', fontWeight: 600 }}>PROPOSED (UNVERIFIED)</span>}
-            </h4>
+            </h3>
             {(() => {
               const displayLoc = selected.donationLocationBreakdown || (() => {
                 try {
@@ -323,10 +323,10 @@ export default function AccountabilitySelector({
         {/* PAC Type Breakdown */}
         {(selected.pacTypeBreakdown || selected.proposedValues?.['pac_type_breakdown']) && (
           <div className="card pac-breakdown-card" style={!selected.pacTypeBreakdown ? { border: '1px dashed var(--warning)' } : undefined}>
-            <h4 style={{ marginBottom: '1rem', fontSize: '0.9375rem', display: 'flex', justifyContent: 'space-between' }}>
+            <h3 style={{ marginBottom: '1rem', fontSize: '0.9375rem', display: 'flex', justifyContent: 'space-between' }}>
               <span>PAC Type Breakdown</span>
               {!selected.pacTypeBreakdown && <span style={{ fontSize: '0.625rem', color: 'var(--warning)', fontWeight: 600 }}>PROPOSED (UNVERIFIED)</span>}
-            </h4>
+            </h3>
             {(() => {
               const displayPacType = selected.pacTypeBreakdown || (() => {
                 try {
@@ -355,10 +355,10 @@ export default function AccountabilitySelector({
       {/* Top PAC Donors */}
       {((selected.topPacDonors && selected.topPacDonors.length > 0) || selected.proposedValues?.['top_pac_donors']) && (
         <div className="card" style={!selected.topPacDonors ? { border: '1px dashed var(--warning)' } : undefined}>
-          <h4 style={{ marginBottom: '1rem', fontSize: '0.9375rem', display: 'flex', justifyContent: 'space-between' }}>
+          <h3 style={{ marginBottom: '1rem', fontSize: '0.9375rem', display: 'flex', justifyContent: 'space-between' }}>
             <span>Top PAC Donors</span>
             {!selected.topPacDonors && <span style={{ fontSize: '0.625rem', color: 'var(--warning)', fontWeight: 600 }}>PROPOSED (UNVERIFIED)</span>}
-          </h4>
+          </h3>
           {(() => {
             const displayDonors = selected.topPacDonors || (() => {
               try {
