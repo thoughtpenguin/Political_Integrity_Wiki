@@ -1467,3 +1467,115 @@ h4 { font-size: 1.0625rem; }
   }
 }
 
+/* ─── Contribution Nudge ────────────────────────────────────────────── */
+@keyframes nudge-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.contribution-nudge {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 200;
+  width: 320px;
+  max-width: calc(100vw - 2rem);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.10);
+  animation: nudge-slide-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contribution-nudge { animation: none; }
+}
+
+.contribution-nudge-accent {
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-primary), #7c3aed);
+}
+
+.contribution-nudge-body {
+  padding: 1rem 1rem 0.875rem;
+}
+
+.contribution-nudge-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.625rem;
+}
+
+.contribution-nudge-title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.contribution-nudge-close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.contribution-nudge-close:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
+.contribution-nudge-candidate {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--accent-secondary);
+  margin-bottom: 0.125rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contribution-nudge-field {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 0.875rem;
+}
+
+.contribution-nudge-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.contribution-nudge-emulator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--warning);
+  opacity: 0.8;
+}

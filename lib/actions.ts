@@ -294,9 +294,11 @@ export async function submitProposalAction(formData: FormData) {
     // 5. Execute deduction and creation atomically in a transaction
     const proposalRef = adminDb.collection('proposals').doc()
     await adminDb.runTransaction(async (transaction) => {
-      // Deduct points
+      // Deduct points and record contribution tracking fields
       transaction.update(userRef, {
-        credibilityPoints: FieldValue.increment(-cost)
+        credibilityPoints: FieldValue.increment(-cost),
+        lastContributedAt: new Date().toISOString(),
+        lastContributedFieldId: fieldId,
       })
       // Add proposal
       transaction.set(proposalRef, {

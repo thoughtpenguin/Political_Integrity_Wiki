@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { useAuth } from './AuthProvider'
 import ProfileModal from './ProfileModal'
+import ContributionNudge from './ContributionNudge'
 
 export default function AuthButton() {
   const { user, loading, signIn, logOut } = useAuth()
@@ -80,6 +81,8 @@ export default function AuthButton() {
           onClose={() => setIsProfileOpen(false)}
           isInitialSetup={!!user.isNewUser}
         />
+        {/* Contribution nudge — only shown for returning contributors */}
+        {!user.isNewUser && <ContributionNudge />}
       </>
     )
   }
